@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserRegisterForm {
-    private String username;
+    private String name;
 
     private String password;
 
@@ -15,8 +15,8 @@ public class UserRegisterForm {
     public UserRegisterForm() {
     }
 
-    public UserRegisterForm(String username, String password, String email) {
-        this.username = username;
+    public UserRegisterForm(String name, String password, String email) {
+        this.name = name;
         this.password = password;
         this.email = email;
     }

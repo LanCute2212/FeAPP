@@ -13,6 +13,7 @@ import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.request.UserRegisterForm;
 
+import lombok.extern.log4j.Log4j;
 import retrofit2.Call;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -48,38 +49,42 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            UserRegisterForm request = new UserRegisterForm(username, email, password);
+            try {
+                UserRegisterForm request = new UserRegisterForm(username, password, email);
 
-            UserClient userClient = ApiClient.getClient().create(UserClient.class);
-            Call<String> call = userClient.registerUser(request);
+                UserClient userClient = ApiClient.getClient().create(UserClient.class);
+                Call<String> call = userClient.registerUser(request);
 
-            call.enqueue(new retrofit2.Callback<String>() {
-                @Override
-                public void onResponse(Call<String> call, retrofit2.Response<String> response) {
-                    if (response.isSuccessful()) {
+                call.enqueue(new retrofit2.Callback<String>() {
+                    @Override
+                    public void onResponse(Call<String> call, retrofit2.Response<String> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(RegisterActivity.this,
+                                    "Server: " + response.body(), Toast.LENGTH_SHORT).show();
+
+                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(RegisterActivity.this,
+                                    "Đăng ký thất bại! Mã lỗi: " + response.code(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<String> call, Throwable t) {
                         Toast.makeText(RegisterActivity.this,
-                                "Server: " + response.body(), Toast.LENGTH_SHORT).show();
-
-                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(RegisterActivity.this,
-                                "Đăng ký thất bại! Mã lỗi: " + response.code(),
+                                "Lỗi kết nối: " + t.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                     }
-                }
-
-                @Override
-                public void onFailure(Call<String> call, Throwable t) {
-                    Toast.makeText(RegisterActivity.this,
-                            "Lỗi kết nối: " + t.getMessage(),
-                            Toast.LENGTH_SHORT).show();
-                }
-            });
+                });
+            } catch (Exception ex) {
+                System.out.println();
+                throw new InternalError(ex.getMessage());
+            }
         });
 
-        // 🔹 Xử lý khi bấm "Login"
         tvLogin.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
