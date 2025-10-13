@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- AppBarLayout chứa thanh trên -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Light">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <!-- Avatar -->
+            <ImageView
+                android:id="@+id/avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_person"
+                android:background="@drawable/circle_bg_light"
+                android:scaleType="centerCrop"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Text ngày + chào -->
+            <TextView
+                android:id="@+id/header_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="TODAY, 7 OCTOBER\nHello, let's get started!"
+                android:textSize="14sp"
+                android:textColor="#2B2B2B"
+                android:lineSpacingExtra="2dp"
+                android:layout_marginStart="8dp"
+                app:layout_constraintStart_toEndOf="@id/avatar"
+                app:layout_constraintTop_toTopOf="@id/avatar"
+                app:layout_constraintEnd_toStartOf="@id/icon_bell"
+                app:layout_constraintBottom_toBottomOf="@id/avatar"
+                android:gravity="start" />
+
+            <!-- Icon chuông -->
+            <ImageView
+                android:id="@+id/icon_bell"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_bell"
+                app:layout_constraintTop_toTopOf="@id/avatar"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+
+            <!-- Thanh ngày (22,23,24,...) -->
+            <LinearLayout
+                android:id="@+id/days_row"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/avatar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="8dp">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1"
+                    android:padding="15dp"
+                    android:textColor="#0a0a0a" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2"
+                    android:padding="15dp"
+                    android:textColor="#0a0a0a" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="3"
+                    android:padding="15dp"
+                    android:textColor="#0a0a0a" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4"
+                    android:padding="15dp"
+                    android:textColor="#0a0a0a" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5"
+                    android:padding="15dp"
+                    android:textColor="#0a0a0a" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="6"
+                    android:padding="15dp"
+                    android:textColor="#0a0a0a" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="7"
+                    android:padding="15dp"
+                    android:background="@drawable/day_background"
+                    android:textColor="#0a0a0a"
+                    android:gravity="center"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="30dp" />
+
+                <!-- Dấu gạch dọc (vertical divider) -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="#E0E0E0" />
+
+                <!-- Icon lịch -->
+                <ImageView
+                    android:id="@+id/icon_calendar"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/ic_calender"
+                    android:layout_marginStart="30dp"
+                    app:layout_constraintTop_toBottomOf="@id/icon_bell"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Nội dung bên dưới cuộn được -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:fillViewport="true"
+        android:background="#FFFFFF"
+        android:paddingBottom="80dp">
+
+        <!-- Gắn phần layout phía dưới (calo, nhật ký ăn uống,...) ở đây -->
+        <include layout="@layout/activity_homepage" />
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Bottom Bar (mirroring top bar structure, always visible) -->
+    <!-- Bottom Bar -->
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="vertical"
+        android:background="#FFFFFF"
+        android:elevation="4dp"
+        android:layout_gravity="bottom">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <!-- Left aligned item (e.g., journal icon) -->
+            <ImageView
+                android:id="@+id/bottom_left_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_journal"
+                app:tint="#4CAF50"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginStart="20dp"/>
+
+            <!-- Center items (workout, explore) -->
+            <ImageView
+                android:id="@+id/bottom_workout_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_running"
+                app:layout_constraintStart_toEndOf="@id/bottom_left_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginStart="50dp"
+                />
+
+            <ImageView
+                android:id="@+id/search_icon"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:src="@drawable/ic_search"
+                app:tint="#4CAF50"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+            <ImageView
+                android:id="@+id/bottom_explore_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_compass"
+                app:layout_constraintEnd_toStartOf="@id/bottom_right_icon"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="40dp" />
+
+            <!-- Right aligned item (e.g., help icon) -->
+            <ImageView
+                android:id="@+id/bottom_right_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_headphones"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginEnd="20dp"/>
+
+            <!-- Labels below icons -->
+            <TextView
+                android:id="@+id/bottom_journal_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Diary"
+                android:textSize="12sp"
+                android:textColor="#4CAF50"
+                app:layout_constraintStart_toStartOf="@id/bottom_left_icon"
+                app:layout_constraintTop_toBottomOf="@id/bottom_left_icon"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="0dp"/>
+
+            <TextView
+                android:id="@+id/bottom_workout_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Exercise"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                app:layout_constraintStart_toStartOf="@id/bottom_workout_icon"
+                app:layout_constraintTop_toBottomOf="@id/bottom_workout_icon"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="-9dp"/>
+
+            <TextView
+                android:id="@+id/bottom_explore_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Explore"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                app:layout_constraintEnd_toEndOf="@id/bottom_explore_icon"
+                app:layout_constraintTop_toBottomOf="@id/bottom_explore_icon"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="-6dp"/>
+
+            <TextView
+                android:id="@+id/bottom_help_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Help"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                app:layout_constraintEnd_toEndOf="@id/bottom_right_icon"
+                app:layout_constraintTop_toBottomOf="@id/bottom_right_icon"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="2dp"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

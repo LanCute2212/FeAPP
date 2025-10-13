@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_gravity="center">
+
+        <EditText
+            android:id="@+id/etAge"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#D3D3D3"
+            android:hint="Age"
+            android:inputType="number"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/etGender"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#D3D3D3"
+            android:hint="Gender"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/etWeight"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#D3D3D3"
+            android:hint="Weight (kg)"
+            android:inputType="numberDecimal"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/etHeight"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#D3D3D3"
+            android:hint="Height (cm)"
+            android:inputType="numberDecimal"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/etLevelActivity"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#D3D3D3"
+            android:hint="Level Activity"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:layout_marginBottom="12dp" />
+
+        <EditText
+            android:id="@+id/etGoal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#D3D3D3"
+            android:hint="Goal"
+            android:padding="10dp"
+            android:textColor="#000"
+            android:layout_marginBottom="20dp" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Save"
+            android:background="@drawable/bg_button"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+</ScrollView>
+
+
