@@ -11,7 +11,6 @@ public class ListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_listactivity);
 
         findViewById(R.id.cancel).setOnClickListener(v -> {
-            // Create an intent to start EditPhysicalProfileActivity
             Intent intent = new Intent(ListActivity.this, HomePageActivity.class);
             startActivity(intent);
         });

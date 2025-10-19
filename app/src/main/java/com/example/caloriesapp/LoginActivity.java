@@ -13,8 +13,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.request.UserLoginForm;
+import com.example.caloriesapp.dto.response.LoginResponse;
 
 import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -32,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btn_login);
         tvRegister = findViewById(R.id.tv_register);
 
+
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -40,38 +44,43 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (username.isEmpty()) {
                     etUsername.setError("Enter your username");
-                } else if (password.isEmpty()) {
+                    return;
+                }
+                if (password.isEmpty()) {
                     etPassword.setError("Enter your password");
-                } else {
-
-                    Toast.makeText(LoginActivity.this, "Sign up successful!", Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(LoginActivity.this, PhysicalProfileActivity.class);
-                    startActivity(intent);
+                    return;
                 }
 
                 UserLoginForm request = new UserLoginForm(username, password);
                 UserClient userClient = ApiClient.getClient().create(UserClient.class);
 
-                Call<String> call = userClient.login(request);
 
-                call.enqueue(new retrofit2.Callback<String>() {
+                Call<LoginResponse> call = userClient.login(request);
+
+                call.enqueue(new Callback<LoginResponse>() {
                     @Override
-                    public void onResponse(Call<String> call, retrofit2.Response<String> response) {
-                        if (response.isSuccessful()) {
-                            Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(LoginActivity.this, PhysicalProfileActivity.class);
+                    public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            String message = response.body().getMessage();
+                            String email = response.body().getEmail();
+
+                            Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
+
+                            Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
+                            intent.putExtra("email", email);
                             startActivity(intent);
+                            finish();
                         } else {
                             Toast.makeText(LoginActivity.this, "Invalid username or password", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
-                    public void onFailure(Call<String> call, Throwable t) {
+                    public void onFailure(Call<LoginResponse> call, Throwable t) {
                         Toast.makeText(LoginActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+
             }
         });
 
@@ -84,5 +93,3 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 }
-
-

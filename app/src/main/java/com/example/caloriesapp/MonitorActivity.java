@@ -11,7 +11,6 @@ public class MonitorActivity extends AppCompatActivity {
         setContentView(R.layout.activity_monitoring);
 
         findViewById(R.id.toolbar).setOnClickListener(v -> {
-            // Create an intent to start EditPhysicalProfileActivity
             Intent intent = new Intent(MonitorActivity.this, HomePageActivity.class);
             startActivity(intent);
         });

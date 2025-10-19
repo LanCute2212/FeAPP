@@ -13,6 +13,8 @@ import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.request.UserRegisterForm;
 
+import java.util.Map;
+
 import lombok.extern.log4j.Log4j;
 import retrofit2.Call;
 
@@ -53,11 +55,11 @@ public class RegisterActivity extends AppCompatActivity {
                 UserRegisterForm request = new UserRegisterForm(username, password, email);
 
                 UserClient userClient = ApiClient.getClient().create(UserClient.class);
-                Call<String> call = userClient.registerUser(request);
+                Call<Map<String, Object>> call = userClient.registerUser(request);
 
-                call.enqueue(new retrofit2.Callback<String>() {
+                call.enqueue(new retrofit2.Callback<Map<String, Object>>() {
                     @Override
-                    public void onResponse(Call<String> call, retrofit2.Response<String> response) {
+                    public void onResponse(Call<Map<String, Object>> call, retrofit2.Response<Map<String, Object>> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(RegisterActivity.this,
                                     "Server: " + response.body(), Toast.LENGTH_SHORT).show();
@@ -73,7 +75,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<String> call, Throwable t) {
+                    public void onFailure(Call<Map<String, Object>> call, Throwable t) {
                         Toast.makeText(RegisterActivity.this,
                                 "Lỗi kết nối: " + t.getMessage(),
                                 Toast.LENGTH_SHORT).show();
