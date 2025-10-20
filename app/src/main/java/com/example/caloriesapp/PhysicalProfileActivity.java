@@ -47,7 +47,7 @@ public class PhysicalProfileActivity extends AppCompatActivity {
         }
 
         UserClient userClient = ApiClient.getClient().create(UserClient.class);
-        Call<PhysicalProfileForm> call = userClient.getInfor(email);
+        Call<PhysicalProfileForm> call = userClient.getInfo(email);
 
         call.enqueue(new Callback<PhysicalProfileForm>() {
             @Override

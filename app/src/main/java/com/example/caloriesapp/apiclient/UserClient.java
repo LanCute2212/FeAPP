@@ -25,6 +25,7 @@ public interface UserClient {
     @PUT("api/user")
     Call<Void> update(@Query("email") String email, @Body PhysicalEditProfileForm form);
 
-    @GET("api/user/getInfor")
-    Call<PhysicalProfileForm> getInfor(@Query("email") String email);
+    @GET("api/user/getInfo")
+    Call<PhysicalProfileForm> getInfo(@Query("email") String email);
+
 }

@@ -2,12 +2,22 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.LinearLayout;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.caloriesapp.adapter.ActivityAdapter;
+import com.example.caloriesapp.model.ActivityItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
     private String email;
+    private ActivityAdapter activityAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,7 +25,6 @@ public class HomePageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_topbar);
 
         email = getIntent().getStringExtra("email");
-
 
         findViewById(R.id.icon_bell).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
@@ -38,53 +47,64 @@ public class HomePageActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Navigate to list when clicking activity title (if present in current layout)
-        View titleActivityList = findViewById(R.id.title_activity_list);
-        if (titleActivityList != null) {
-            titleActivityList.setOnClickListener(v -> {
-                Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
-                startActivity(intent);
-            });
-        }
-
         findViewById(R.id.icon_calendar).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, MonitorActivity.class);
             startActivity(intent);
         });
 
-        // Expand/Collapse handlers for activity items
-        LinearLayout details1 = findViewById(R.id.activity_details_1);
-        LinearLayout details2 = findViewById(R.id.activity_details_2);
-        LinearLayout details3 = findViewById(R.id.activity_details_3);
+        findViewById(R.id.add_activity).setOnClickListener(v -> {
+            Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
+            startActivity(intent);
+        });
 
-        View expand1 = findViewById(R.id.expand_item_1_btn);
-        View expand2 = findViewById(R.id.expand_item_2_btn);
-        View expand3 = findViewById(R.id.expand_item_3_btn);
+        setupActivitiesList();
+    }
 
-        View collapse1 = findViewById(R.id.collapse_item_1_btn);
-        View collapse2 = findViewById(R.id.collapse_item_2_btn);
-        View collapse3 = findViewById(R.id.collapse_item_3_btn);
+    // Truyền danh sách vào adapter
+    private void setupActivitiesList() {
+        RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        if (expand1 != null && details1 != null) {
-            expand1.setOnClickListener(v -> details1.setVisibility(View.VISIBLE));
-        }
-        if (collapse1 != null && details1 != null) {
-            collapse1.setOnClickListener(v -> details1.setVisibility(View.GONE));
-        }
+        List<ActivityItem> activityList = createActivityList();
+        activityAdapter = new ActivityAdapter(activityList);
+        recyclerView.setAdapter(activityAdapter);
 
-        if (expand2 != null && details2 != null) {
-            expand2.setOnClickListener(v -> details2.setVisibility(View.VISIBLE));
-        }
-        if (collapse2 != null && details2 != null) {
-            collapse2.setOnClickListener(v -> details2.setVisibility(View.GONE));
-        }
+        setupSwipeToDelete(recyclerView);
+    }
 
-        if (expand3 != null && details3 != null) {
-            expand3.setOnClickListener(v -> details3.setVisibility(View.VISIBLE));
-        }
-        if (collapse3 != null && details3 != null) {
-            collapse3.setOnClickListener(v -> details3.setVisibility(View.GONE));
-        }
+    private void setupSwipeToDelete(RecyclerView recyclerView) {
+        ItemTouchHelper.SimpleCallback swipeToDeleteCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
 
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                activityAdapter.removeActivity(position);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeToDeleteCallback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+    }
+
+    // Tạo danh sách hoạt động
+    private List<ActivityItem> createActivityList() {
+        List<ActivityItem> activities = new ArrayList<>();
+
+        activities.add(new ActivityItem("Badminton", "30 minutes", 150, R.drawable.ic_badminton, "Moderate", null, "07-10-2025"));
+
+        activities.add(new ActivityItem("Running", "45 minutes", 300, R.drawable.ic_fire, "High", "5.2 km", "07-10-2025"));
+
+        activities.add(new ActivityItem("Cycling", "60 minutes", 400, R.drawable.ic_lightning, "Moderate", "15.5 km", "07-10-2025"));
+
+        return activities;
+    }
+
+    private void addNewActivity() {
+        // TODO: Implement add new activity functionality
+        // This could open a dialog or navigate to an add activity screen
     }
 }

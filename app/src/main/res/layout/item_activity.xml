@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginTop="12dp">
+
+    <!-- Activity Item -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/activity_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="activity icon"
+            app:tint="#4CAF50"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/activity_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Activity Name"
+                android:textSize="16sp"
+                android:textColor="#111111"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/activity_summary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Duration • Calories"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginTop="2dp"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/toggle_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▼"
+            android:textSize="16sp"
+            android:textColor="#2196F3"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="8dp"/>
+
+    </LinearLayout>
+
+    <!-- Activity Details (Initially Hidden) -->
+    <LinearLayout
+        android:id="@+id/activity_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginStart="68dp"
+        android:layout_marginEnd="16dp"
+        android:background="#F8F9FA"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Activity Details:"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#333333"/>
+
+        <TextView
+            android:id="@+id/duration_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• Duration: 30 minutes"
+            android:textSize="13sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"/>
+
+        <TextView
+            android:id="@+id/calories_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• Calories burned: 150 kcal"
+            android:textSize="13sp"
+            android:textColor="#666666"/>
+
+        <TextView
+            android:id="@+id/intensity_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• Intensity: Moderate"
+            android:textSize="13sp"
+            android:textColor="#666666"/>
+
+        <TextView
+            android:id="@+id/distance_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• Distance: 5.2 km"
+            android:textSize="13sp"
+            android:textColor="#666666"/>
+
+        <TextView
+            android:id="@+id/date_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="• Date: 07-10-2025"
+            android:textSize="13sp"
+            android:textColor="#666666"/>
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginStart="68dp"
+        android:layout_marginEnd="16dp"/>
+
+</LinearLayout>
+
