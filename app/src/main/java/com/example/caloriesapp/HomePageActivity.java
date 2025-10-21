@@ -2,10 +2,8 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,11 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
-    private static final int ADD_ACTIVITY_REQUEST_CODE = 1001;
-    private static final int LIST_ACTIVITY_REQUEST_CODE = 1002;
     private String email;
     private ActivityAdapter activityAdapter;
-    private List<ActivityItem> activityList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +42,11 @@ public class HomePageActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        findViewById(R.id.fire).setOnClickListener(v -> {
+            Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
+            startActivity(intent);
+        });
+
         findViewById(R.id.icon_calendar).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, MonitorActivity.class);
             startActivity(intent);
@@ -54,7 +54,7 @@ public class HomePageActivity extends AppCompatActivity {
 
         findViewById(R.id.add_activity).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
-            startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
+            startActivity(intent);
         });
 
         setupActivitiesList();
@@ -65,7 +65,7 @@ public class HomePageActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        activityList = createActivityList();
+        List<ActivityItem> activityList = createActivityList();
         activityAdapter = new ActivityAdapter(activityList);
         recyclerView.setAdapter(activityAdapter);
 
@@ -104,7 +104,7 @@ public class HomePageActivity extends AppCompatActivity {
     }
 
     private void addNewActivity() {
-        Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
-        startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
+        // TODO: Implement add new activity functionality
+        // This could open a dialog or navigate to an add activity screen
     }
 }

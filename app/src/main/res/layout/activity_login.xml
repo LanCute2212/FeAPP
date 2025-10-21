@@ -72,38 +72,36 @@
             app:layout_constraintTop_toBottomOf="@+id/etUsername"
             app:layout_constraintWidth_percent="0.85" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:fontFamily="@font/poppins_medium"
-            android:text="Forgot password?"
-            android:textColor="#2F89FC"
-            android:textSize="13sp"
-            android:paddingTop="15px"
-            app:layout_constraintBottom_toTopOf="@id/btn_login"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etPassword"
-            app:layout_constraintVertical_bias="0.714" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_login"
-            style="@style/RoundedButton"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:backgroundTint="@color/loginColor"
-            android:fontFamily="@font/poppins_semi_bold"
-            android:text="@string/loginStr"
-            android:textColor="@color/white"
-            android:textSize="30px"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/etPassword"
-            app:layout_constraintVertical_bias="0.137"
-            app:layout_constraintWidth_percent="0.85" />
-
         <!-- Loading ProgressBar -->
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="52dp"
+          android:paddingTop="15px"
+          android:fontFamily="@font/poppins_medium"
+          android:text="Forgot password?"
+          android:textColor="#2F89FC"
+          android:textSize="13sp"
+          app:layout_constraintBottom_toTopOf="@id/btn_login"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/etPassword"
+          app:layout_constraintVertical_bias="0.809" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btn_login"
+          style="@style/RoundedButton"
+          android:layout_width="0dp"
+          android:layout_height="48dp"
+          android:backgroundTint="@color/loginColor"
+          android:fontFamily="@font/poppins_semi_bold"
+          android:text="@string/loginStr"
+          android:textColor="@color/white"
+          android:textSize="30px"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/etPassword"
+          app:layout_constraintVertical_bias="0.072"
+          app:layout_constraintWidth_percent="0.85" />
         <ProgressBar
             android:id="@+id/progress_bar"
             android:layout_width="40dp"
