@@ -47,11 +47,6 @@ public class HomePageActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.fire).setOnClickListener(v -> {
-            Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
-            startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
-        });
-
         findViewById(R.id.icon_calendar).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, MonitorActivity.class);
             startActivity(intent);
@@ -108,66 +103,7 @@ public class HomePageActivity extends AppCompatActivity {
         return activities;
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        
-        if (resultCode == RESULT_OK && data != null) {
-            if (requestCode == ADD_ACTIVITY_REQUEST_CODE) {
-                // Handle AddActivity result (manual activity creation)
-                String activityName = data.getStringExtra("activity_name");
-                int energy = data.getIntExtra("energy", 0);
-                int duration = data.getIntExtra("duration", 0);
-                
-                // Create new activity item
-                ActivityItem newActivity = new ActivityItem(
-                    activityName,
-                    duration + " minutes",
-                    energy,
-                    R.drawable.ic_lightning, // Default icon
-                    "Moderate", // Default intensity
-                    null, // No distance
-                    "07-10-2025" // Current date
-                );
-                
-                // Add to the list
-                activityList.add(newActivity);
-                activityAdapter.notifyItemInserted(activityList.size() - 1);
-                
-                Toast.makeText(this, "Activity added successfully!", Toast.LENGTH_SHORT).show();
-                
-            } else if (requestCode == LIST_ACTIVITY_REQUEST_CODE) {
-                // Handle ListActivity result (selected from API list with duration)
-                String activityName = data.getStringExtra("activity_name");
-                String duration = data.getStringExtra("duration");
-                int calories = data.getIntExtra("calories", 0);
-                int iconResource = data.getIntExtra("icon_resource", R.drawable.ic_lightning);
-                String intensity = data.getStringExtra("intensity");
-                String distance = data.getStringExtra("distance");
-                String date = data.getStringExtra("date");
-                
-                // Create new activity item with all the data from ListActivity
-                ActivityItem newActivity = new ActivityItem(
-                    activityName,
-                    duration,
-                    calories,
-                    iconResource,
-                    intensity,
-                    distance,
-                    date
-                );
-                
-                // Add to the list
-                activityList.add(newActivity);
-                activityAdapter.notifyItemInserted(activityList.size() - 1);
-                
-                Toast.makeText(this, activityName + " added to your activities!", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
     private void addNewActivity() {
-        // This method is no longer needed as we use the fire button to navigate to AddActivity
         Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
         startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
     }
