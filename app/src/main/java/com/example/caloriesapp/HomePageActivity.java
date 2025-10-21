@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,93 +17,169 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
-    private static final int ADD_ACTIVITY_REQUEST_CODE = 1001;
-    private static final int LIST_ACTIVITY_REQUEST_CODE = 1002;
-    private String email;
-    private ActivityAdapter activityAdapter;
-    private List<ActivityItem> activityList;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_topbar);
+  private static final int ADD_ACTIVITY_REQUEST_CODE = 1001;
+  private static final int LIST_ACTIVITY_REQUEST_CODE = 1002;
+  private String email;
+  private ActivityAdapter activityAdapter;
+  private List<ActivityItem> activityList;
 
-        email = getIntent().getStringExtra("email");
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_topbar);
 
-        findViewById(R.id.icon_bell).setOnClickListener(v -> {
-            Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
-            startActivity(intent);
-        });
+    email = getIntent().getStringExtra("email");
 
-        findViewById(R.id.avatar).setOnClickListener(v -> {
-            Intent intent = new Intent(HomePageActivity.this, ProfileActivity.class);
-            intent.putExtra("email", email);
-            startActivity(intent);
-        });
+    findViewById(R.id.icon_bell).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
+      startActivity(intent);
+    });
 
-        findViewById(R.id.lightning).setOnClickListener(v -> {
-            Intent intent = new Intent(HomePageActivity.this, TdeeActivity.class);
-            startActivity(intent);
-        });
+    findViewById(R.id.avatar).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, ProfileActivity.class);
+      intent.putExtra("email", email);
+      startActivity(intent);
+    });
 
-        findViewById(R.id.icon_calendar).setOnClickListener(v -> {
-            Intent intent = new Intent(HomePageActivity.this, MonitorActivity.class);
-            startActivity(intent);
-        });
+    findViewById(R.id.lightning).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, TdeeActivity.class);
+      startActivity(intent);
+    });
 
-        findViewById(R.id.add_activity).setOnClickListener(v -> {
-            Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
-            startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
-        });
+    findViewById(R.id.icon_calendar).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, MonitorActivity.class);
+      startActivity(intent);
+    });
 
-        setupActivitiesList();
+    findViewById(R.id.add_activity).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
+      startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
+    });
+
+    setupActivitiesList();
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+
+    if (requestCode == LIST_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+      String activityName = data.getStringExtra("activity_name");
+      String duration = data.getStringExtra("duration");
+      int calories = data.getIntExtra("calories", 0);
+      int iconResource = data.getIntExtra("icon_resource", R.drawable.ic_lightning);
+      String intensity = data.getStringExtra("intensity");
+      String distance = data.getStringExtra("distance");
+      String date = data.getStringExtra("date");
+
+      // check xem người dùng này đã có hoạt động này ở home page chưa
+      int existingIndex = findActivityByName(activityName);
+
+      if (existingIndex != -1) {
+        ActivityItem existingActivity = activityList.get(existingIndex);
+        updateExistingActivity(existingActivity, duration, calories);
+        activityAdapter.notifyItemChanged(existingIndex);
+        Toast.makeText(this, "Updated " + activityName + " with additional " + duration,
+            Toast.LENGTH_SHORT).show();
+      } else {
+        ActivityItem newActivity = new ActivityItem(
+            activityName,
+            duration,
+            calories,
+            iconResource,
+            intensity,
+            distance,
+            date
+        );
+
+        activityAdapter.addActivity(newActivity);
+        Toast.makeText(this, "Added " + activityName + " to your activities", Toast.LENGTH_SHORT)
+            .show();
+      }
     }
+  }
 
-    // Truyền danh sách vào adapter
-    private void setupActivitiesList() {
-        RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        activityList = createActivityList();
-        activityAdapter = new ActivityAdapter(activityList);
-        recyclerView.setAdapter(activityAdapter);
-
-        setupSwipeToDelete(recyclerView);
+  private int findActivityByName(String activityName) {
+    for (int i = 0; i < activityList.size(); i++) {
+      if (activityList.get(i).getName().equals(activityName)) {
+        return i;
+      }
     }
+    return -1;
+  }
 
-    private void setupSwipeToDelete(RecyclerView recyclerView) {
-        ItemTouchHelper.SimpleCallback swipeToDeleteCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
+  private void updateExistingActivity(ActivityItem existingActivity, String newDuration,
+      int newCalories) {
+    // lấy lượng thời gian đã có của hoạt động đó ở home page
+    String existingDurationStr = existingActivity.getDuration().replaceAll("\\D+", "");
+    int existingMinutes = Integer.parseInt(
+        existingDurationStr.isEmpty() ? "0" : existingDurationStr);
 
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
-                activityAdapter.removeActivity(position);
-            }
-        };
+    String newDurationStr = newDuration.replaceAll("\\D+", "");
+    int newMinutes = Integer.parseInt(newDurationStr.isEmpty() ? "0" : newDurationStr);
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeToDeleteCallback);
-        itemTouchHelper.attachToRecyclerView(recyclerView);
-    }
+    // tính lại tổng thời gian và lượng kcal
+    int totalMinutes = existingMinutes + newMinutes;
+    int totalCalories = existingActivity.getCalories() + newCalories;
 
-    // Tạo danh sách hoạt động
-    private List<ActivityItem> createActivityList() {
-        List<ActivityItem> activities = new ArrayList<>();
+    existingActivity.setDuration(totalMinutes + " minutes");
+    existingActivity.setCalories(totalCalories);
+  }
 
-        activities.add(new ActivityItem("Badminton", "30 minutes", 150, R.drawable.ic_badminton, "Moderate", null, "07-10-2025"));
+  // Truyền danh sách vào adapter
+  private void setupActivitiesList() {
+    RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
+    recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        activities.add(new ActivityItem("Running", "45 minutes", 300, R.drawable.ic_fire, "High", "5.2 km", "07-10-2025"));
+    activityList = createActivityList();
+    activityAdapter = new ActivityAdapter(activityList);
+    recyclerView.setAdapter(activityAdapter);
 
-        activities.add(new ActivityItem("Cycling", "60 minutes", 400, R.drawable.ic_lightning, "Moderate", "15.5 km", "07-10-2025"));
+    setupSwipeToDelete(recyclerView);
+  }
 
-        return activities;
-    }
+  private void setupSwipeToDelete(RecyclerView recyclerView) {
+    ItemTouchHelper.SimpleCallback swipeToDeleteCallback = new ItemTouchHelper.SimpleCallback(0,
+        ItemTouchHelper.RIGHT) {
+      @Override
+      public boolean onMove(@NonNull RecyclerView recyclerView,
+          @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+        return false;
+      }
 
-    private void addNewActivity() {
-        Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
-        startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
-    }
+      @Override
+      public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+        int position = viewHolder.getAdapterPosition();
+        activityAdapter.removeActivity(position);
+      }
+    };
+
+    ItemTouchHelper itemTouchHelper = new ItemTouchHelper(swipeToDeleteCallback);
+    itemTouchHelper.attachToRecyclerView(recyclerView);
+  }
+
+  // Tạo danh sách hoạt động
+  private List<ActivityItem> createActivityList() {
+    List<ActivityItem> activities = new ArrayList<>();
+
+    activities.add(
+        new ActivityItem("Badminton", "30 minutes", 150, R.drawable.ic_badminton, "Moderate", null,
+            "07-10-2025"));
+
+    activities.add(
+        new ActivityItem("Running", "45 minutes", 300, R.drawable.ic_fire, "High", "5.2 km",
+            "07-10-2025"));
+
+    activities.add(
+        new ActivityItem("Cycling", "60 minutes", 400, R.drawable.ic_lightning, "Moderate",
+            "15.5 km", "07-10-2025"));
+
+    return activities;
+  }
+
+  private void addNewActivity() {
+    Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
+    startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
+  }
 }

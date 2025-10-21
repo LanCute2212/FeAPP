@@ -53,6 +53,11 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         }
     }
 
+    public void addActivity(ActivityItem newActivity) {
+        activityList.add(newActivity);
+        notifyItemInserted(activityList.size() - 1);
+    }
+
     @NonNull
     @Override
     public ActivityViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
