@@ -104,6 +104,18 @@
             app:layout_constraintVertical_bias="0.137"
             app:layout_constraintWidth_percent="0.85" />
 
+        <!-- Loading ProgressBar -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:visibility="gone"
+            android:indeterminateTint="@color/loginColor"
+            app:layout_constraintBottom_toBottomOf="@id/btn_login"
+            app:layout_constraintEnd_toEndOf="@id/btn_login"
+            app:layout_constraintStart_toStartOf="@id/btn_login"
+            app:layout_constraintTop_toTopOf="@id/btn_login" />
+
         <TextView
             android:id="@+id/tv_register"
             android:layout_width="wrap_content"

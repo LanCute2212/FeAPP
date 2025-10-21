@@ -17,9 +17,14 @@ import java.util.List;
 public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder> {
     private List<ActivityItem> activityList;
     private OnActivityDeleteListener deleteListener;
+    private OnActivityClickListener clickListener;
 
     public interface OnActivityDeleteListener {
         void onActivityDelete(int position);
+    }
+
+    public interface OnActivityClickListener {
+        void onActivityClick(ActivityItem activity, int position);
     }
 
     public ActivityAdapter(List<ActivityItem> activityList) {
@@ -30,10 +35,21 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
         this.deleteListener = listener;
     }
 
+    public void setOnActivityClickListener(OnActivityClickListener listener) {
+        this.clickListener = listener;
+    }
+
     public void removeActivity(int position) {
         if (position >= 0 && position < activityList.size()) {
             activityList.remove(position);
             notifyItemRemoved(position);
+        }
+    }
+
+    public void updateActivity(int position, ActivityItem updatedActivity) {
+        if (position >= 0 && position < activityList.size()) {
+            activityList.set(position, updatedActivity);
+            notifyItemChanged(position);
         }
     }
 
@@ -48,7 +64,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
     @Override
     public void onBindViewHolder(@NonNull ActivityViewHolder holder, int position) {
         ActivityItem activity = activityList.get(position);
-        holder.bind(activity);
+        holder.bind(activity, position, clickListener);
     }
 
     @Override
@@ -82,7 +98,7 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
             dateText = itemView.findViewById(R.id.date_text);
         }
 
-        public void bind(ActivityItem activity) {
+        public void bind(ActivityItem activity, int position, OnActivityClickListener clickListener) {
             activityIcon.setImageResource(activity.getIconResource());
             activityName.setText(activity.getName());
             activitySummary.setText(activity.getSummary());
@@ -100,6 +116,12 @@ public class ActivityAdapter extends RecyclerView.Adapter<ActivityAdapter.Activi
             }
 
             toggleButton.setOnClickListener(v -> toggleActivityDetails());
+            
+            itemView.setOnClickListener(v -> {
+                if (clickListener != null) {
+                    clickListener.onActivityClick(activity, position);
+                }
+            });
         }
 
         private void toggleActivityDetails() {

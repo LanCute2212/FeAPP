@@ -11,7 +11,6 @@ public class DialogLanguageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_dialoglanguage);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> {
-            // Create an intent to start EditPhysicalProfileActivity
             Intent intent = new Intent(DialogLanguageActivity.this, ProfileActivity.class);
             startActivity(intent);
         });

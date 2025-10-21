@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText etUsername, etPassword;
     Button btnLogin;
     TextView tvRegister;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         btnLogin = findViewById(R.id.btn_login);
         tvRegister = findViewById(R.id.tv_register);
+        progressBar = findViewById(R.id.progress_bar);
 
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -51,20 +54,21 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
+                showLoading(true);
+
                 UserLoginForm request = new UserLoginForm(username, password);
                 UserClient userClient = ApiClient.getClient().create(UserClient.class);
-
 
                 Call<LoginResponse> call = userClient.login(request);
 
                 call.enqueue(new Callback<LoginResponse>() {
                     @Override
                     public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                        showLoading(false);
+                        
                         if (response.isSuccessful() && response.body() != null) {
                             String message = response.body().getMessage();
                             String email = response.body().getEmail();
-
-                            Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
 
                             Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
                             intent.putExtra("email", email);
@@ -77,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(Call<LoginResponse> call, Throwable t) {
+                        showLoading(false);
                         Toast.makeText(LoginActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -91,5 +96,17 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    private void showLoading(boolean isLoading) {
+        if (isLoading) {
+            progressBar.setVisibility(View.VISIBLE);
+            btnLogin.setEnabled(false);
+            btnLogin.setText("Logging in...");
+        } else {
+            progressBar.setVisibility(View.GONE);
+            btnLogin.setEnabled(true);
+            btnLogin.setText(getString(R.string.loginStr));
+        }
     }
 }

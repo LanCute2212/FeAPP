@@ -2,8 +2,10 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,8 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
+    private static final int ADD_ACTIVITY_REQUEST_CODE = 1001;
+    private static final int LIST_ACTIVITY_REQUEST_CODE = 1002;
     private String email;
     private ActivityAdapter activityAdapter;
+    private List<ActivityItem> activityList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +49,7 @@ public class HomePageActivity extends AppCompatActivity {
 
         findViewById(R.id.fire).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
         });
 
         findViewById(R.id.icon_calendar).setOnClickListener(v -> {
@@ -54,7 +59,7 @@ public class HomePageActivity extends AppCompatActivity {
 
         findViewById(R.id.add_activity).setOnClickListener(v -> {
             Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
         });
 
         setupActivitiesList();
@@ -65,7 +70,7 @@ public class HomePageActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        List<ActivityItem> activityList = createActivityList();
+        activityList = createActivityList();
         activityAdapter = new ActivityAdapter(activityList);
         recyclerView.setAdapter(activityAdapter);
 
@@ -103,8 +108,67 @@ public class HomePageActivity extends AppCompatActivity {
         return activities;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == ADD_ACTIVITY_REQUEST_CODE) {
+                // Handle AddActivity result (manual activity creation)
+                String activityName = data.getStringExtra("activity_name");
+                int energy = data.getIntExtra("energy", 0);
+                int duration = data.getIntExtra("duration", 0);
+                
+                // Create new activity item
+                ActivityItem newActivity = new ActivityItem(
+                    activityName,
+                    duration + " minutes",
+                    energy,
+                    R.drawable.ic_lightning, // Default icon
+                    "Moderate", // Default intensity
+                    null, // No distance
+                    "07-10-2025" // Current date
+                );
+                
+                // Add to the list
+                activityList.add(newActivity);
+                activityAdapter.notifyItemInserted(activityList.size() - 1);
+                
+                Toast.makeText(this, "Activity added successfully!", Toast.LENGTH_SHORT).show();
+                
+            } else if (requestCode == LIST_ACTIVITY_REQUEST_CODE) {
+                // Handle ListActivity result (selected from API list with duration)
+                String activityName = data.getStringExtra("activity_name");
+                String duration = data.getStringExtra("duration");
+                int calories = data.getIntExtra("calories", 0);
+                int iconResource = data.getIntExtra("icon_resource", R.drawable.ic_lightning);
+                String intensity = data.getStringExtra("intensity");
+                String distance = data.getStringExtra("distance");
+                String date = data.getStringExtra("date");
+                
+                // Create new activity item with all the data from ListActivity
+                ActivityItem newActivity = new ActivityItem(
+                    activityName,
+                    duration,
+                    calories,
+                    iconResource,
+                    intensity,
+                    distance,
+                    date
+                );
+                
+                // Add to the list
+                activityList.add(newActivity);
+                activityAdapter.notifyItemInserted(activityList.size() - 1);
+                
+                Toast.makeText(this, activityName + " added to your activities!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     private void addNewActivity() {
-        // TODO: Implement add new activity functionality
-        // This could open a dialog or navigate to an add activity screen
+        // This method is no longer needed as we use the fire button to navigate to AddActivity
+        Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
+        startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
     }
 }
