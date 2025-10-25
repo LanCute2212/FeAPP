@@ -69,25 +69,34 @@ public class ListActivity extends AppCompatActivity {
                 .build();
 
         ActivityClient client = retrofit.create(ActivityClient.class);
-        Call<List<ActivityResponse>> call = client.getActivityList();
+        Call<BaseResponse<List<ActivityResponse>>> call = client.getActivityList(1);
 
-        call.enqueue(new Callback<List<ActivityResponse>>() {
+        call.enqueue(new Callback<BaseResponse<List<ActivityResponse>>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ActivityResponse>> call, 
-                                 @NonNull Response<List<ActivityResponse>> response) {
+            public void onResponse(
+                    @NonNull Call<BaseResponse<List<ActivityResponse>>> call,
+                    @NonNull Response<BaseResponse<List<ActivityResponse>>> response
+            ) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<ActivityResponse> apiResponses = response.body();
-                    List<ActivityItem> activityItems = mapToActivityItems(apiResponses);
-                    
-                    activityAdapter = new ActivityAdapter(activityItems);
-                    RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
-                    recyclerView.setAdapter(activityAdapter);
-                    
-                    activityAdapter.setOnActivityClickListener((activity, position) -> {
-                        showDurationDialog(activity, position);
-                    });
-                    
-                    Log.d("API", "Successfully loaded " + activityItems.size() + " activities");
+                    BaseResponse<List<ActivityResponse>> body = response.body();
+
+                    if (!body.isError() && body.getData() != null) {
+                        List<ActivityResponse> apiResponses = body.getData();
+                        List<ActivityItem> activityItems = mapToActivityItems(apiResponses);
+
+                        activityAdapter = new ActivityAdapter(activityItems);
+                        RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
+                        recyclerView.setAdapter(activityAdapter);
+
+                        activityAdapter.setOnActivityClickListener((activity, position) -> {
+                            showDurationDialog(activity, position);
+                        });
+
+                        Log.d("API", "Successfully loaded " + activityItems.size() + " activities");
+                    } else {
+                        Log.e("API", "API returned error: " + body.getStatus());
+                        loadFallbackData();
+                    }
                 } else {
                     Log.e("API", "Failed to fetch activities: " + response.code());
                     loadFallbackData();
@@ -95,7 +104,10 @@ public class ListActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<ActivityResponse>> call, @NonNull Throwable t) {
+            public void onFailure(
+                    @NonNull Call<BaseResponse<List<ActivityResponse>>> call,
+                    @NonNull Throwable t
+            ) {
                 Log.e("API", "Network error: " + t.getMessage());
                 loadFallbackData();
             }
