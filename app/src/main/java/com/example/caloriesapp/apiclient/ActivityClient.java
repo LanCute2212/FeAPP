@@ -6,6 +6,8 @@ import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.dto.response.ActivityLogResponse;
 
 import java.util.List;
+
+import kotlin.ParameterName;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
