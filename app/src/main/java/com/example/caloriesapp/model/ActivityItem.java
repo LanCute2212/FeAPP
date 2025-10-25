@@ -13,11 +13,18 @@ public class ActivityItem {
 
   private String name;
   private String duration;
-  private int calories;
+  private Double calories;
   private int iconResource;
   private String intensity;
   private String distance;
   private String date;
+
+  public ActivityItem(String name, String s, Double caloriesBurned, int icLightning) {
+    this.name = name;
+    this.duration = s;
+    this.calories = caloriesBurned;
+    this.iconResource = icLightning;
+  }
 
   public String getName() {
     return name;
@@ -35,11 +42,11 @@ public class ActivityItem {
     this.duration = duration;
   }
 
-  public int getCalories() {
+  public Double getCalories() {
     return calories;
   }
 
-  public void setCalories(int calories) {
+  public void setCalories(Double calories) {
     this.calories = calories;
   }
 
@@ -72,18 +79,6 @@ public class ActivityItem {
   }
 
   public void setDate(String date) {
-    this.date = date;
-  }
-
-  public ActivityItem() {}
-
-  public ActivityItem(String name, String duration, int calories, int iconResource, String intensity, String distance, String date) {
-    this.name = name;
-    this.duration = duration;
-    this.calories = calories;
-    this.iconResource = iconResource;
-    this.intensity = intensity;
-    this.distance = distance;
     this.date = date;
   }
 

@@ -95,7 +95,7 @@ public class HomePageActivity extends AppCompatActivity {
     if (requestCode == LIST_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
       String activityName = data.getStringExtra("activity_name");
       String duration = data.getStringExtra("duration");
-      int calories = data.getIntExtra("calories", 0);
+      Double calories = (double) data.getIntExtra("calories", 0);
       int iconResource = data.getIntExtra("icon_resource", R.drawable.ic_lightning);
       String intensity = data.getStringExtra("intensity");
       String distance = data.getStringExtra("distance");
@@ -138,7 +138,7 @@ public class HomePageActivity extends AppCompatActivity {
   }
 
   private void updateExistingActivity(ActivityItem existingActivity, String newDuration,
-      int newCalories) {
+      Double newCalories) {
     // lấy lượng thời gian đã có của hoạt động đó ở home page
     String existingDurationStr = existingActivity.getDuration().replaceAll("\\D+", "");
     int existingMinutes = Integer.parseInt(
@@ -149,7 +149,7 @@ public class HomePageActivity extends AppCompatActivity {
 
     // tính lại tổng thời gian và lượng kcal
     int totalMinutes = existingMinutes + newMinutes;
-    int totalCalories = existingActivity.getCalories() + newCalories;
+    Double totalCalories = existingActivity.getCalories() + newCalories;
 
     existingActivity.setDuration(totalMinutes + " minutes");
     existingActivity.setCalories(totalCalories);
@@ -192,15 +192,15 @@ public class HomePageActivity extends AppCompatActivity {
     List<ActivityItem> activities = new ArrayList<>();
 
     activities.add(
-        new ActivityItem("Badminton", "30 minutes", 150, R.drawable.ic_badminton, "Moderate", null,
+        new ActivityItem("Badminton", "30 minutes", 150.0, R.drawable.ic_badminton, "Moderate", null,
             "07-10-2025"));
 
     activities.add(
-        new ActivityItem("Running", "45 minutes", 300, R.drawable.ic_fire, "High", "5.2 km",
+        new ActivityItem("Running", "45 minutes", 300.0, R.drawable.ic_fire, "High", "5.2 km",
             "07-10-2025"));
 
     activities.add(
-        new ActivityItem("Cycling", "60 minutes", 400, R.drawable.ic_lightning, "Moderate",
+        new ActivityItem("Cycling", "60 minutes", 400.0, R.drawable.ic_lightning, "Moderate",
             "15.5 km", "07-10-2025"));
 
     return activities;

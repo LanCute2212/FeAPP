@@ -31,8 +31,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ListActivity extends AppCompatActivity {
     private ActivityAdapter activityAdapter;
-    private static final String BASE_URL = "http://localhost:8081/";
-
+    private static final String BASE_URL = "http://10.0.2.2:8081/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,25 +68,34 @@ public class ListActivity extends AppCompatActivity {
                 .build();
 
         ActivityClient client = retrofit.create(ActivityClient.class);
-        Call<List<ActivityResponse>> call = client.getActivityList();
+        Call<BaseResponse<List<ActivityResponse>>> call = client.getActivityList(2);
 
-        call.enqueue(new Callback<List<ActivityResponse>>() {
+        call.enqueue(new Callback<BaseResponse<List<ActivityResponse>>>() {
             @Override
-            public void onResponse(@NonNull Call<List<ActivityResponse>> call, 
-                                 @NonNull Response<List<ActivityResponse>> response) {
+            public void onResponse(
+                    @NonNull Call<BaseResponse<List<ActivityResponse>>> call,
+                    @NonNull Response<BaseResponse<List<ActivityResponse>>> response
+            ) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<ActivityResponse> apiResponses = response.body();
-                    List<ActivityItem> activityItems = mapToActivityItems(apiResponses);
-                    
-                    activityAdapter = new ActivityAdapter(activityItems);
-                    RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
-                    recyclerView.setAdapter(activityAdapter);
-                    
-                    activityAdapter.setOnActivityClickListener((activity, position) -> {
-                        showDurationDialog(activity, position);
-                    });
-                    
-                    Log.d("API", "Successfully loaded " + activityItems.size() + " activities");
+                    BaseResponse<List<ActivityResponse>> body = response.body();
+
+                    if (!body.isError() && body.getData() != null) {
+                        List<ActivityResponse> apiResponses = body.getData();
+                        List<ActivityItem> activityItems = mapToActivityItems(apiResponses);
+
+                        activityAdapter = new ActivityAdapter(activityItems);
+                        RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
+                        recyclerView.setAdapter(activityAdapter);
+
+                        activityAdapter.setOnActivityClickListener((activity, position) -> {
+                            showDurationDialog(activity, position);
+                        });
+
+                        Log.d("API", "Successfully loaded " + activityItems.size() + " activities");
+                    } else {
+                        Log.e("API", "API returned error: " + body.getStatus());
+                        loadFallbackData();
+                    }
                 } else {
                     Log.e("API", "Failed to fetch activities: " + response.code());
                     loadFallbackData();
@@ -95,13 +103,15 @@ public class ListActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(@NonNull Call<List<ActivityResponse>> call, @NonNull Throwable t) {
+            public void onFailure(
+                    @NonNull Call<BaseResponse<List<ActivityResponse>>> call,
+                    @NonNull Throwable t
+            ) {
                 Log.e("API", "Network error: " + t.getMessage());
                 loadFallbackData();
             }
         });
     }
-
     private void createActivityLog(LogActivityRequest request, int duration, ActivityItem activity, int position) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -148,11 +158,8 @@ public class ListActivity extends AppCompatActivity {
             ActivityItem item = new ActivityItem(
                 response.getName(),
                 "30 minutes",
-                500,
-                R.drawable.ic_lightning,
-                "Moderate",
-                null,
-                "07-10-2025"
+                response.getCaloriesBurned(),
+                R.drawable.ic_lightning
             );
             activityItems.add(item);
         }
@@ -177,7 +184,7 @@ public class ListActivity extends AppCompatActivity {
         activities.add(new ActivityItem(
             "Tập Thái Cực Quyền",
             "30 minutes",
-            500,
+            500.0,
             R.drawable.ic_lightning,
             "Moderate",
             null,
@@ -187,7 +194,7 @@ public class ListActivity extends AppCompatActivity {
         activities.add(new ActivityItem(
             "Cưỡi ngựa",
             "30 minutes",
-            500,
+            500.0,
             R.drawable.ic_fire,
             "Moderate",
             null,
@@ -197,7 +204,7 @@ public class ListActivity extends AppCompatActivity {
         activities.add(new ActivityItem(
             "Nhảy dây nhanh",
             "30 minutes",
-            500,
+            500.0,
             R.drawable.ic_badminton,
             "Moderate",
             null,
@@ -265,7 +272,7 @@ public class ListActivity extends AppCompatActivity {
         ActivityItem updatedActivity = new ActivityItem(
             activity.getName(),
             durationMinutes + " minutes",
-            caloriesBurned,
+                (double) caloriesBurned,
             activity.getIconResource(),
             activity.getIntensity(),
             activity.getDistance(),
@@ -296,7 +303,7 @@ public class ListActivity extends AppCompatActivity {
         ActivityItem updatedActivity = new ActivityItem(
             activity.getName(),
             durationMinutes + " minutes",
-            newCalories,
+                (double) newCalories,
             activity.getIconResource(),
             activity.getIntensity(),
             activity.getDistance(),

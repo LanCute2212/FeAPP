@@ -10,10 +10,11 @@ import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface ActivityClient {
-    @GET("api/activity")
-    Call<List<ActivityResponse>> getActivityList();
+    @GET("api/activities")
+    Call<BaseResponse<List<ActivityResponse>>> getActivityList(@Query("id") Integer userId);
 
     @POST("api/activity-logs")
     Call<BaseResponse<ActivityLogResponse>> createActivityLog(@Body LogActivityRequest request);

@@ -3,14 +3,14 @@ package com.example.caloriesapp.dto.response;
 public class ActivityResponse {
     private int id;
     private String name;
-    private Integer caloriesBurned;
+    private Double caloriesBurnedPer30Minutes;
 
     public ActivityResponse() {}
 
-    public ActivityResponse(int id, String name, Integer caloriesBurned) {
+    public ActivityResponse(int id, String name, Double caloriesBurned) {
         this.id = id;
         this.name = name;
-        this.caloriesBurned = caloriesBurned;
+        this.caloriesBurnedPer30Minutes = caloriesBurned;
     }
 
     public int getId() {
@@ -29,11 +29,11 @@ public class ActivityResponse {
         this.name = name;
     }
 
-    public Integer getCaloriesBurned() {
-        return caloriesBurned;
+    public Double getCaloriesBurned() {
+        return caloriesBurnedPer30Minutes;
     }
 
-    public void setCaloriesBurned(Integer caloriesBurned) {
-        this.caloriesBurned = caloriesBurned;
+    public void setCaloriesBurned(Double caloriesBurned) {
+        this.caloriesBurnedPer30Minutes = caloriesBurned;
     }
 }
