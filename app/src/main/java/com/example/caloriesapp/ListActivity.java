@@ -16,7 +16,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.caloriesapp.adapter.ActivityAdapter;
 import com.example.caloriesapp.apiclient.ActivityClient;
+import com.example.caloriesapp.dto.request.LogActivityRequest;
 import com.example.caloriesapp.dto.response.ActivityResponse;
+import com.example.caloriesapp.dto.response.ActivityLogResponse;
+import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.model.ActivityItem;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,6 +98,45 @@ public class ListActivity extends AppCompatActivity {
             public void onFailure(@NonNull Call<List<ActivityResponse>> call, @NonNull Throwable t) {
                 Log.e("API", "Network error: " + t.getMessage());
                 loadFallbackData();
+            }
+        });
+    }
+
+    private void createActivityLog(LogActivityRequest request, int duration, ActivityItem activity, int position) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ActivityClient client = retrofit.create(ActivityClient.class);
+        Call<BaseResponse<ActivityLogResponse>> call = client.createActivityLog(request);
+
+        call.enqueue(new Callback<BaseResponse<ActivityLogResponse>>() {
+            @Override
+            public void onResponse(@NonNull Call<BaseResponse<ActivityLogResponse>> call,
+                                 @NonNull Response<BaseResponse<ActivityLogResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    BaseResponse<ActivityLogResponse> baseResponse = response.body();
+                    if (!baseResponse.isError() && baseResponse.getData() != null) {
+                        int caloriesBurned = baseResponse.getData().getCaloriesBurned();
+                        Log.d("API", "Activity log created successfully. Calories burned: " + caloriesBurned);
+                        
+                        updateActivityWithServerCalories(activity, duration, caloriesBurned, position);
+                    } else {
+                        Log.e("API", "Server returned error: " + baseResponse.getMessage());
+                        updateActivityDuration(activity, duration, position);
+                    }
+                } else {
+                    Log.e("API", "Failed to create activity log: " + response.code());
+                    updateActivityDuration(activity, duration, position);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<BaseResponse<ActivityLogResponse>> call, @NonNull Throwable t) {
+                Log.e("API", "Network error while creating activity log: " + t.getMessage());
+                // Fallback to local calculation
+                updateActivityDuration(activity, duration, position);
             }
         });
     }
@@ -182,7 +224,6 @@ public class ListActivity extends AppCompatActivity {
         String currentDuration = activity.getDuration().replaceAll("\\D+", ""); // Extract numbers only
         durationInput.setHint("Current: " + activity.getDuration());
         
-        // Create dialog
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();
@@ -202,8 +243,12 @@ public class ListActivity extends AppCompatActivity {
                     durationInput.setError("Duration must be greater than 0");
                     return;
                 }
+
+                LogActivityRequest request = new LogActivityRequest();
+                request.setUserId(1);
+                request.setDurationInMinutes(durationMinutes);
                 
-                updateActivityDuration(activity, durationMinutes, position);
+                createActivityLog(request, durationMinutes, activity, position);
                 dialog.dismiss();
                 
             } catch (NumberFormatException e) {
@@ -214,6 +259,34 @@ public class ListActivity extends AppCompatActivity {
         Log.d("DialogDebug", "About to show dialog");
         dialog.show();
         Log.d("DialogDebug", "Dialog shown successfully");
+    }
+    
+    private void updateActivityWithServerCalories(ActivityItem activity, int durationMinutes, int caloriesBurned, int position) {
+        ActivityItem updatedActivity = new ActivityItem(
+            activity.getName(),
+            durationMinutes + " minutes",
+            caloriesBurned,
+            activity.getIconResource(),
+            activity.getIntensity(),
+            activity.getDistance(),
+            activity.getDate()
+        );
+        
+        activityAdapter.updateActivity(position, updatedActivity);
+        
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra("activity_name", updatedActivity.getName());
+        resultIntent.putExtra("duration", updatedActivity.getDuration());
+        resultIntent.putExtra("calories", updatedActivity.getCalories());
+        resultIntent.putExtra("icon_resource", updatedActivity.getIconResource());
+        resultIntent.putExtra("intensity", updatedActivity.getIntensity());
+        resultIntent.putExtra("distance", updatedActivity.getDistance());
+        resultIntent.putExtra("date", updatedActivity.getDate());
+        
+        setResult(RESULT_OK, resultIntent);
+        finish();
+        
+        Log.d("ActivityUpdate", "Updated " + activity.getName() + " to " + durationMinutes + " minutes, " + caloriesBurned + " calories (from server)");
     }
     
     private void updateActivityDuration(ActivityItem activity, int durationMinutes, int position) {
