@@ -59,6 +59,31 @@ public class HomePageActivity extends AppCompatActivity {
       startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
     });
 
+    findViewById(R.id.btn_xem_chi_tiet).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Breakfast");
+      startActivity(intent);
+    });
+
+    // Add click listeners for meal add buttons
+    findViewById(R.id.breakfast_add_button).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Breakfast");
+      startActivity(intent);
+    });
+
+    findViewById(R.id.lunch_add_button).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Lunch");
+      startActivity(intent);
+    });
+
+    findViewById(R.id.dinner_add_button).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Dinner");
+      startActivity(intent);
+    });
+
     setupActivitiesList();
     populateWeekDates();
   }

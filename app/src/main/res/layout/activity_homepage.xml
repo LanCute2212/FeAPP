@@ -371,6 +371,7 @@
                         android:contentDescription="sang" />
 
                     <ImageView
+                        android:id="@+id/breakfast_add_button"
                         android:layout_width="15dp"
                         android:layout_height="15dp"
                         android:layout_gravity="bottom|end"
@@ -405,6 +406,7 @@
                         android:contentDescription="trua" />
 
                     <ImageView
+                        android:id="@+id/lunch_add_button"
                         android:layout_width="15dp"
                         android:layout_height="15dp"
                         android:layout_gravity="bottom|end"
@@ -439,6 +441,7 @@
                         android:contentDescription="toi" />
 
                     <ImageView
+                        android:id="@+id/dinner_add_button"
                         android:layout_width="15dp"
                         android:layout_height="15dp"
                         android:layout_gravity="bottom|end"
