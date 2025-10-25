@@ -2,6 +2,8 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,7 @@ import com.example.caloriesapp.adapter.ActivityAdapter;
 import com.example.caloriesapp.model.ActivityItem;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
@@ -57,7 +60,32 @@ public class HomePageActivity extends AppCompatActivity {
       startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
     });
 
+    findViewById(R.id.btn_xem_chi_tiet).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, MealDetailsActivity.class);
+      startActivity(intent);
+    });
+
+    // Add click listeners for meal add buttons
+    findViewById(R.id.breakfast_add_button).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Breakfast");
+      startActivity(intent);
+    });
+
+    findViewById(R.id.lunch_add_button).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Lunch");
+      startActivity(intent);
+    });
+
+    findViewById(R.id.dinner_add_button).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
+      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Dinner");
+      startActivity(intent);
+    });
+
     setupActivitiesList();
+    populateWeekDates();
   }
 
   @Override
@@ -181,5 +209,74 @@ public class HomePageActivity extends AppCompatActivity {
   private void addNewActivity() {
     Intent intent = new Intent(HomePageActivity.this, AddActivity.class);
     startActivityForResult(intent, ADD_ACTIVITY_REQUEST_CODE);
+  }
+
+  private void populateWeekDates() {
+    Calendar calendar = Calendar.getInstance();
+    Calendar today = Calendar.getInstance();
+    
+    int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+
+    int daysToSubtract = (currentDayOfWeek == Calendar.SUNDAY) ? 6 : currentDayOfWeek - Calendar.MONDAY;
+    
+    calendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
+    
+    TextView[] dayTextViews = {
+        findViewById(R.id.day_1),
+        findViewById(R.id.day_2),
+        findViewById(R.id.day_3),
+        findViewById(R.id.day_4),
+        findViewById(R.id.day_5),
+        findViewById(R.id.day_6),
+        findViewById(R.id.day_7)
+    };
+    
+    for (int i = 0; i < 7; i++) {
+      int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+      dayTextViews[i].setText(String.valueOf(dayOfMonth));
+      
+      boolean isToday = calendar.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH) &&
+                       calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+                       calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
+      
+      if (isToday) {
+        dayTextViews[i].setBackgroundResource(R.drawable.day_background);
+      } else {
+        dayTextViews[i].setBackground(null);
+      }
+      
+      calendar.add(Calendar.DAY_OF_MONTH, 1);
+    }
+    
+    updateHeaderText();
+  }
+
+  private void updateHeaderText() {
+    Calendar calendar = Calendar.getInstance();
+    
+    String[] monthNames = {
+        "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+        "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+    };
+    
+    String dayOfWeek = getDayOfWeekName(calendar.get(Calendar.DAY_OF_WEEK));
+    String month = monthNames[calendar.get(Calendar.MONTH)];
+    int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+    
+    TextView headerText = findViewById(R.id.header_text);
+    headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
+  }
+
+  private String getDayOfWeekName(int dayOfWeek) {
+    switch (dayOfWeek) {
+      case Calendar.SUNDAY: return "SUNDAY";
+      case Calendar.MONDAY: return "MONDAY";
+      case Calendar.TUESDAY: return "TUESDAY";
+      case Calendar.WEDNESDAY: return "WEDNESDAY";
+      case Calendar.THURSDAY: return "THURSDAY";
+      case Calendar.FRIDAY: return "FRIDAY";
+      case Calendar.SATURDAY: return "SATURDAY";
+      default: return "TODAY";
+    }
   }
 }
