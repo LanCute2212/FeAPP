@@ -21,12 +21,20 @@ public class EditPhysicalProfile extends AppCompatActivity {
     private EditText txtAge, txtGender, txtWeight, txtHeight, txtLevelActivity, txtGoal;
     private Button btnSave;
 
-    private final String email = "email@gmail.com";
+    private String email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editphysicalinformation);
+
+        // Get email from intent
+        email = getIntent().getStringExtra("email");
+        if (email == null || email.isEmpty()) {
+            Toast.makeText(this, "Không có email người dùng", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         txtAge = findViewById(R.id.etAge);
         txtGender = findViewById(R.id.etGender);
