@@ -41,6 +41,8 @@
 
         <activity android:name=".FoodTrackingActivity" />
 
+        <activity android:name=".MealDetailsActivity" />
+
 
         <activity
             android:name=".MainActivity"

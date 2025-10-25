@@ -2,6 +2,7 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,8 +61,7 @@ public class HomePageActivity extends AppCompatActivity {
     });
 
     findViewById(R.id.btn_xem_chi_tiet).setOnClickListener(v -> {
-      Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
-      intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Breakfast");
+      Intent intent = new Intent(HomePageActivity.this, MealDetailsActivity.class);
       startActivity(intent);
     });
 

@@ -6,12 +6,15 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.caloriesapp.adapter.FoodAdapter;
 import com.example.caloriesapp.model.FoodItem;
+import com.example.caloriesapp.model.MealDetail;
+import com.example.caloriesapp.util.MealDataManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -173,8 +176,18 @@ public class FoodTrackingActivity extends AppCompatActivity {
     }
 
     private void addFoodToMeal(FoodItem food) {
-        // Add food to current meal and update nutrition summary
+        // Create MealDetail from FoodItem
+        String currentDate = MealDataManager.getInstance().getCurrentDate();
+        MealDetail mealDetail = new MealDetail(currentMealType, food, currentDate);
+        
+        // Save to data manager
+        MealDataManager.getInstance().addMealDetail(mealDetail);
+        
+        // Update nutrition summary
         updateNutritionSummary();
+        
+        // Show success message
+        Toast.makeText(this, "Added " + food.getName() + " to " + currentMealType, Toast.LENGTH_SHORT).show();
     }
 
     private void updateNutritionSummary() {
