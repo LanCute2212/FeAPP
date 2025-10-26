@@ -191,18 +191,6 @@ public class HomePageActivity extends AppCompatActivity {
   private List<ActivityItem> createActivityList() {
     List<ActivityItem> activities = new ArrayList<>();
 
-    activities.add(
-        new ActivityItem("Badminton", "30 minutes", 150.0, R.drawable.ic_badminton, "Moderate", null,
-            "07-10-2025"));
-
-    activities.add(
-        new ActivityItem("Running", "45 minutes", 300.0, R.drawable.ic_fire, "High", "5.2 km",
-            "07-10-2025"));
-
-    activities.add(
-        new ActivityItem("Cycling", "60 minutes", 400.0, R.drawable.ic_lightning, "Moderate",
-            "15.5 km", "07-10-2025"));
-
     return activities;
   }
 

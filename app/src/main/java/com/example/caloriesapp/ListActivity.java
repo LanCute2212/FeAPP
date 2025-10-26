@@ -94,11 +94,11 @@ public class ListActivity extends AppCompatActivity {
                         Log.d("API", "Successfully loaded " + activityItems.size() + " activities");
                     } else {
                         Log.e("API", "API returned error: " + body.getStatus());
-                        loadFallbackData();
+
                     }
                 } else {
                     Log.e("API", "Failed to fetch activities: " + response.code());
-                    loadFallbackData();
+
                 }
             }
 
@@ -108,7 +108,6 @@ public class ListActivity extends AppCompatActivity {
                     @NonNull Throwable t
             ) {
                 Log.e("API", "Network error: " + t.getMessage());
-                loadFallbackData();
             }
         });
     }
