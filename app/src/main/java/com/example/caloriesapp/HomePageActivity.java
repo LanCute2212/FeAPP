@@ -55,10 +55,16 @@ public class HomePageActivity extends AppCompatActivity {
       startActivity(intent);
     });
 
-    findViewById(R.id.add_activity).setOnClickListener(v -> {
-      Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
-      startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
-    });
+    setupCollapsibleActivityHeader();
+    
+    // Setup add activity button
+    View addActivityButton = findViewById(R.id.add_activity);
+    if (addActivityButton != null) {
+      addActivityButton.setOnClickListener(v -> {
+        Intent intent = new Intent(HomePageActivity.this, ListActivity.class);
+        startActivityForResult(intent, LIST_ACTIVITY_REQUEST_CODE);
+      });
+    }
 
     findViewById(R.id.btn_xem_chi_tiet).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, MealDetailsActivity.class);
@@ -95,7 +101,7 @@ public class HomePageActivity extends AppCompatActivity {
     if (requestCode == LIST_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
       String activityName = data.getStringExtra("activity_name");
       String duration = data.getStringExtra("duration");
-      Double calories = (double) data.getIntExtra("calories", 0);
+      Double calories = data.getDoubleExtra("calories", 0);
       int iconResource = data.getIntExtra("icon_resource", R.drawable.ic_lightning);
       String intensity = data.getStringExtra("intensity");
       String distance = data.getStringExtra("distance");
@@ -125,6 +131,9 @@ public class HomePageActivity extends AppCompatActivity {
         Toast.makeText(this, "Added " + activityName + " to your activities", Toast.LENGTH_SHORT)
             .show();
       }
+      
+      // Update summary stats after adding/updating activities
+      updateSummaryStats();
     }
   }
 
@@ -180,6 +189,8 @@ public class HomePageActivity extends AppCompatActivity {
       public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
         int position = viewHolder.getAdapterPosition();
         activityAdapter.removeActivity(position);
+        // Update summary stats after removing activity
+        updateSummaryStats();
       }
     };
 
@@ -265,6 +276,78 @@ public class HomePageActivity extends AppCompatActivity {
       case Calendar.FRIDAY: return "FRIDAY";
       case Calendar.SATURDAY: return "SATURDAY";
       default: return "TODAY";
+    }
+  }
+  
+  private void setupCollapsibleActivityHeader() {
+    View headerContainer = findViewById(R.id.activity_header_container);
+    View summaryStatsLayout = findViewById(R.id.summary_stats_layout);
+    RecyclerView activitiesRecyclerView = findViewById(R.id.activities_recycler_view);
+    TextView expandCollapseArrow = findViewById(R.id.expand_collapse_arrow);
+    
+    final boolean[] isExpanded = {false};
+    
+    if (headerContainer != null) {
+      headerContainer.setOnClickListener(v -> {
+        isExpanded[0] = !isExpanded[0];
+        
+        if (isExpanded[0]) {
+          // Expand: show activities list and summary
+          if (activitiesRecyclerView != null) {
+            activitiesRecyclerView.setVisibility(View.VISIBLE);
+          }
+          if (expandCollapseArrow != null) {
+            expandCollapseArrow.setText("▲");
+          }
+          if (summaryStatsLayout != null) {
+            summaryStatsLayout.setVisibility(View.VISIBLE);
+          }
+        } else {
+          // Collapse: hide activities list and summary
+          if (activitiesRecyclerView != null) {
+            activitiesRecyclerView.setVisibility(View.GONE);
+          }
+          if (expandCollapseArrow != null) {
+            expandCollapseArrow.setText("▼");
+          }
+          if (summaryStatsLayout != null) {
+            summaryStatsLayout.setVisibility(View.GONE);
+          }
+        }
+      });
+    }
+    
+    updateSummaryStats();
+  }
+  
+  private void updateSummaryStats() {
+    TextView totalActivitiesCount = findViewById(R.id.total_activities_count);
+    TextView totalCalories = findViewById(R.id.total_calories);
+    TextView totalDuration = findViewById(R.id.total_duration);
+    TextView activitySummaryText = findViewById(R.id.activity_summary_text);
+    
+    if (totalActivitiesCount == null || activityList == null) {
+      return;
+    }
+    
+    int activityCount = activityList.size();
+    double totalCal = 0;
+    int totalMinutes = 0;
+    
+    for (ActivityItem activity : activityList) {
+      totalCal += activity.getCalories();
+      String duration = activity.getDuration();
+      String durationNum = duration.replaceAll("\\D+", "");
+      if (!durationNum.isEmpty()) {
+        totalMinutes += Integer.parseInt(durationNum);
+      }
+    }
+    
+    totalActivitiesCount.setText(String.valueOf(activityCount));
+    totalCalories.setText(String.format("%.0f", totalCal));
+    totalDuration.setText(totalMinutes + " min");
+    if (activitySummaryText != null) {
+      activitySummaryText.setText(activityCount + " activities");
     }
   }
 }

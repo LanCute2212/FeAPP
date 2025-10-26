@@ -101,3 +101,4 @@ public class MealDetailAdapter extends RecyclerView.Adapter<MealDetailAdapter.Me
     }
 }
 
+

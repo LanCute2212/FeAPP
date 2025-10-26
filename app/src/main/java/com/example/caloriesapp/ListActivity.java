@@ -31,7 +31,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ListActivity extends AppCompatActivity {
     private ActivityAdapter activityAdapter;
-    private static final String BASE_URL = "http://10.0.2.2:8081/";
+    private static final String BASE_URL = "http://localhost:8081/";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,7 +127,7 @@ public class ListActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     BaseResponse<ActivityLogResponse> baseResponse = response.body();
                     if (!baseResponse.isError() && baseResponse.getData() != null) {
-                        int caloriesBurned = baseResponse.getData().getCaloriesBurned();
+                        double caloriesBurned = baseResponse.getData().getCaloriesBurned();
                         Log.d("API", "Activity log created successfully. Calories burned: " + caloriesBurned);
                         
                         updateActivityWithServerCalories(activity, duration, caloriesBurned, position);
@@ -252,6 +252,7 @@ public class ListActivity extends AppCompatActivity {
 
                 LogActivityRequest request = new LogActivityRequest();
                 request.setUserId(1);
+                request.setActivityId(position+1);
                 request.setDurationInMinutes(durationMinutes);
                 
                 createActivityLog(request, durationMinutes, activity, position);
@@ -267,11 +268,11 @@ public class ListActivity extends AppCompatActivity {
         Log.d("DialogDebug", "Dialog shown successfully");
     }
     
-    private void updateActivityWithServerCalories(ActivityItem activity, int durationMinutes, int caloriesBurned, int position) {
+    private void updateActivityWithServerCalories(ActivityItem activity, int durationMinutes, double caloriesBurned, int position) {
         ActivityItem updatedActivity = new ActivityItem(
             activity.getName(),
             durationMinutes + " minutes",
-                (double) caloriesBurned,
+                 caloriesBurned,
             activity.getIconResource(),
             activity.getIntensity(),
             activity.getDistance(),
@@ -283,7 +284,7 @@ public class ListActivity extends AppCompatActivity {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("activity_name", updatedActivity.getName());
         resultIntent.putExtra("duration", updatedActivity.getDuration());
-        resultIntent.putExtra("calories", updatedActivity.getCalories());
+        resultIntent.putExtra("calories", updatedActivity.getCalories().doubleValue());
         resultIntent.putExtra("icon_resource", updatedActivity.getIconResource());
         resultIntent.putExtra("intensity", updatedActivity.getIntensity());
         resultIntent.putExtra("distance", updatedActivity.getDistance());
@@ -314,7 +315,7 @@ public class ListActivity extends AppCompatActivity {
         Intent resultIntent = new Intent();
         resultIntent.putExtra("activity_name", updatedActivity.getName());
         resultIntent.putExtra("duration", updatedActivity.getDuration());
-        resultIntent.putExtra("calories", updatedActivity.getCalories());
+        resultIntent.putExtra("calories", updatedActivity.getCalories().doubleValue());
         resultIntent.putExtra("icon_resource", updatedActivity.getIconResource());
         resultIntent.putExtra("intensity", updatedActivity.getIntensity());
         resultIntent.putExtra("distance", updatedActivity.getDistance());

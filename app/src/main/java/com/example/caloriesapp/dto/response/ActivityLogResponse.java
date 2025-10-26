@@ -9,7 +9,7 @@ public class ActivityLogResponse {
     private int logId;
     private int durationMinutes;
     private String logDate;
-    private int caloriesBurned;
+    private double caloriesBurned;
 
     public ActivityDto getActivityDto() {
         return activityDto;
@@ -51,11 +51,11 @@ public class ActivityLogResponse {
         this.logDate = logDate;
     }
 
-    public int getCaloriesBurned() {
+    public double getCaloriesBurned() {
         return caloriesBurned;
     }
 
-    public void setCaloriesBurned(int caloriesBurned) {
+    public void setCaloriesBurned(double caloriesBurned) {
         this.caloriesBurned = caloriesBurned;
     }
 }

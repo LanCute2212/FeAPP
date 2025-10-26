@@ -83,6 +83,7 @@ public class ActivityItem {
   }
 
   public String getSummary() {
-    return duration + " • " + calories + " kcal";
+    String caloriesFormatted = String.format("%.1f", calories != null ? calories : 0);
+    return duration + " • " + caloriesFormatted + " kcal";
   }
 }
