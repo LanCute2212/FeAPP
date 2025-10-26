@@ -282,7 +282,7 @@ public class HomePageActivity extends AppCompatActivity {
   private void setupCollapsibleActivityHeader() {
     View headerContainer = findViewById(R.id.activity_header_container);
     View summaryStatsLayout = findViewById(R.id.summary_stats_layout);
-    RecyclerView activitiesRecyclerView = findViewById(R.id.activities_recycler_view);
+    View activitiesContainer = findViewById(R.id.activities_container);
     TextView expandCollapseArrow = findViewById(R.id.expand_collapse_arrow);
     
     final boolean[] isExpanded = {false};
@@ -292,9 +292,9 @@ public class HomePageActivity extends AppCompatActivity {
         isExpanded[0] = !isExpanded[0];
         
         if (isExpanded[0]) {
-          // Expand: show activities list and summary
-          if (activitiesRecyclerView != null) {
-            activitiesRecyclerView.setVisibility(View.VISIBLE);
+          // Expand: show activities container and summary
+          if (activitiesContainer != null) {
+            activitiesContainer.setVisibility(View.VISIBLE);
           }
           if (expandCollapseArrow != null) {
             expandCollapseArrow.setText("▲");
@@ -303,9 +303,9 @@ public class HomePageActivity extends AppCompatActivity {
             summaryStatsLayout.setVisibility(View.VISIBLE);
           }
         } else {
-          // Collapse: hide activities list and summary
-          if (activitiesRecyclerView != null) {
-            activitiesRecyclerView.setVisibility(View.GONE);
+          // Collapse: hide activities container and summary
+          if (activitiesContainer != null) {
+            activitiesContainer.setVisibility(View.GONE);
           }
           if (expandCollapseArrow != null) {
             expandCollapseArrow.setText("▼");

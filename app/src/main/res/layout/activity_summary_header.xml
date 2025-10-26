@@ -1,148 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
-    
-    <LinearLayout
-        android:id="@+id/activity_header_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?android:attr/selectableItemBackground">
-        
-        <ImageView
-            android:id="@+id/activity_header_icon"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_lightning"
-            android:contentDescription="activities icon"/>
-        
-        <TextView
-            android:id="@+id/activity_header_title"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Activities"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#111111"
-            android:layout_marginStart="12dp"/>
-        
-        <TextView
-            android:id="@+id/activity_summary_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 activities"
-            android:textSize="14sp"
-            android:textColor="#666666"/>
-        
-        <ImageView
-            android:id="@+id/add_activity"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:src="@drawable/ic_add"
-            android:contentDescription="Add activity"
-            android:layout_marginStart="12dp"
-            android:background="?android:attr/selectableItemBackground"
-            android:padding="4dp"/>
-        
-        <TextView
-            android:id="@+id/expand_collapse_arrow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="▼"
-            android:textSize="16sp"
-            android:textColor="#666666"
-            android:layout_marginStart="12dp"/>
-    </LinearLayout>
-    
-    <!-- Summary Stats -->
-    <LinearLayout
-        android:id="@+id/summary_stats_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#F8F9FA"
-        android:padding="12dp"
-        android:visibility="gone">
-        
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-            
-            <TextView
-                android:id="@+id/total_activities_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#4CAF50"/>
-            
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Activities"
-                android:textSize="12sp"
-                android:textColor="#666666"/>
-        </LinearLayout>
-        
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-            
-            <TextView
-                android:id="@+id/total_calories"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#FF8A00"/>
-            
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="kcal"
-                android:textSize="12sp"
-                android:textColor="#666666"/>
-        </LinearLayout>
-        
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center">
-            
-            <TextView
-                android:id="@+id/total_duration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="0 min"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#2196F3"/>
-            
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Duration"
-                android:textSize="12sp"
-                android:textColor="#666666"/>
-        </LinearLayout>
-    </LinearLayout>
-    
-</LinearLayout>
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
 
+        <!-- Header (title, add button, arrow) -->
+        <LinearLayout
+          android:id="@+id/activity_header_container"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="center_vertical"
+          android:padding="16dp"
+          android:clickable="true"
+          android:focusable="true"
+          android:background="?android:attr/selectableItemBackground">
+
+            <ImageView
+              android:id="@+id/activity_header_icon"
+              android:layout_width="24dp"
+              android:layout_height="24dp"
+              android:src="@drawable/ic_lightning"
+              android:contentDescription="activities icon" />
+
+            <TextView
+              android:id="@+id/activity_header_title"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_weight="1"
+              android:text="Activities"
+              android:textSize="16sp"
+              android:textStyle="bold"
+              android:textColor="#111111"
+              android:layout_marginStart="12dp" />
+
+            <TextView
+              android:id="@+id/activity_summary_text"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="0 activities"
+              android:textSize="14sp"
+              android:textColor="#666666" />
+
+            <ImageView
+              android:id="@+id/add_activity"
+              android:layout_width="28dp"
+              android:layout_height="28dp"
+              android:src="@drawable/ic_add"
+              android:contentDescription="Add activity"
+              android:layout_marginStart="12dp"
+              android:background="?android:attr/selectableItemBackground"
+              android:padding="4dp" />
+
+            <TextView
+              android:id="@+id/expand_collapse_arrow"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="▼"
+              android:textSize="16sp"
+              android:textColor="#666666"
+              android:layout_marginStart="12dp" />
+        </LinearLayout>
+
+        <!-- Summary Stats (expandable) -->
+        <LinearLayout
+          android:id="@+id/summary_stats_layout"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:background="#F8F9FA"
+          android:padding="12dp"
+          android:visibility="gone">
+
+            <LinearLayout
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:gravity="center">
+
+                <TextView
+                  android:id="@+id/total_activities_count"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="0"
+                  android:textSize="24sp"
+                  android:textStyle="bold"
+                  android:textColor="#4CAF50" />
+
+                <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Activities"
+                  android:textSize="12sp"
+                  android:textColor="#666666" />
+            </LinearLayout>
+
+            <LinearLayout
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:gravity="center">
+
+                <TextView
+                  android:id="@+id/total_calories"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="0"
+                  android:textSize="24sp"
+                  android:textStyle="bold"
+                  android:textColor="#FF8A00" />
+
+                <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="kcal"
+                  android:textSize="12sp"
+                  android:textColor="#666666" />
+            </LinearLayout>
+
+            <LinearLayout
+              android:layout_width="0dp"
+              android:layout_weight="1"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:gravity="center">
+
+                <TextView
+                  android:id="@+id/total_duration"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="0 min"
+                  android:textSize="24sp"
+                  android:textStyle="bold"
+                  android:textColor="#2196F3" />
+
+                <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="Duration"
+                  android:textSize="12sp"
+                  android:textColor="#666666" />
+            </LinearLayout>
+        </LinearLayout>
+
+</LinearLayout>
