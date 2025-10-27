@@ -25,7 +25,7 @@ import retrofit2.Response;
 public class PhysicalProfileActivity extends AppCompatActivity {
 
     private TextView tvName, tvEmail, tvGender, tvAge, tvHeight, tvWeight,
-            tvActivity, tvGoal, tvCalories, tvBMI, tvBMR, tvTDEE, tvTarget, tvAdjustment;
+            tvActivity, tvCalories, tvBMI, tvBMR, tvTDEE, tvTarget, tvAdjustment;
 
     private double currentWeight;
     private double targetWeight = -1; // -1 means not set
@@ -47,7 +47,6 @@ public class PhysicalProfileActivity extends AppCompatActivity {
         tvHeight = findViewById(R.id.tvHeight);
         tvWeight = findViewById(R.id.tvWeight);
         tvActivity = findViewById(R.id.tvActivity);
-        tvGoal = findViewById(R.id.tvGoal);
         tvCalories = findViewById(R.id.tvCalories);
         tvBMI = findViewById(R.id.tvBMI);
         tvBMR = findViewById(R.id.tvBMR);
@@ -83,12 +82,15 @@ public class PhysicalProfileActivity extends AppCompatActivity {
 
                     tvName.setText(user.getName());
                     tvEmail.setText(user.getEmail());
-                    tvGender.setText("Gender: " + user.getGender());
+                    if(user.getGender().equals("true")) {
+                        tvGender.setText("Gender: Male" );
+                    } else {
+                        tvGender.setText("Gender: Female");
+                    }
                     tvAge.setText("Age: " + user.getAge());
                     tvHeight.setText("Height: " + user.getHeight());
                     tvWeight.setText("Weight: " + user.getWeight());
                     tvActivity.setText("Activity Level: " + user.getActivityLevel());
-                    tvGoal.setText("Goal: " + user.getGoal());
                     tvBMI.setText("BMI: " + user.getBmi());
                     tvBMR.setText("BMR: " + user.getBmr());
                     tvTDEE.setText("TDEE: " + user.getTdee());
