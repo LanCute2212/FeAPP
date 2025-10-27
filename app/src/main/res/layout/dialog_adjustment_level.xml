@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <!-- Icon and Title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_lightning"
+            app:tint="#4CAF50"
+            android:background="@drawable/bg_circle_primary"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:id="@+id/tv_dialog_title"
+            android:text="Thay đổi mức độ cắt giảm"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/poppins_bold"/>
+
+    </LinearLayout>
+
+    <!-- Quick Select Label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chọn Nhanh"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/poppins_bold"/>
+
+    <!-- RecyclerView for Options -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_adjustment_options"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="Hủy"
+            android:textColor="#666666"
+            android:background="@android:color/transparent"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:textAllCaps="false"/>
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="Lưu lại"
+            android:textColor="#FFFFFF"
+            android:background="#4CAF50"
+            android:elevation="4dp"
+            android:fontFamily="@font/poppins_bold"
+            android:textAllCaps="false"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+
+

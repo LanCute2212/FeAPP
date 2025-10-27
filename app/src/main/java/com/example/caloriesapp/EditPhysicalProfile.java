@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.request.PhysicalEditProfileForm;
+import com.example.caloriesapp.session.SessionManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,8 +29,8 @@ public class EditPhysicalProfile extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editphysicalinformation);
 
-        // Get email from intent
-        email = getIntent().getStringExtra("email");
+        SessionManager sessionManager = new SessionManager(this);
+        email = sessionManager.getEmail();
         if (email == null || email.isEmpty()) {
             Toast.makeText(this, "Không có email người dùng", Toast.LENGTH_SHORT).show();
             finish();

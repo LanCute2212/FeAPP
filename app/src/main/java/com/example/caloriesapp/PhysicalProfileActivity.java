@@ -10,7 +10,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.caloriesapp.adapter.AdjustmentOptionAdapter;
 import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.response.BaseResponse;
@@ -22,17 +25,23 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PhysicalProfileActivity extends AppCompatActivity {
 
     private TextView tvName, tvEmail, tvGender, tvAge, tvHeight, tvWeight,
             tvActivity, tvCalories, tvBMI, tvBMR, tvTDEE, tvTarget, tvAdjustment;
 
     private double currentWeight;
-    private double targetWeight = -1; // -1 means not set
+    private double targetWeight = -1;
+    private int selectedAdjustmentLevel = 500;
+    private boolean isWeightLoss = true;
 
     private SessionManager sessionManager;
     private static final String PREFS_NAME = "PhysicalProfile";
     private static final String KEY_TARGET_WEIGHT = "target_weight";
+    private static final String KEY_ADJUSTMENT_LEVEL = "adjustment_level";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,12 +65,13 @@ public class PhysicalProfileActivity extends AppCompatActivity {
 
         sessionManager = new SessionManager(this);
         
-        // Load saved target weight
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
+        selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
         
-        // Set up click listener for target
         findViewById(R.id.target_container).setOnClickListener(v -> showTargetWeightDialog());
+        
+        findViewById(R.id.adjustment_container).setOnClickListener(v -> showAdjustmentDialog());
 
         String email = sessionManager.getEmail();
         if (email == null || email.isEmpty()) {
@@ -82,20 +92,15 @@ public class PhysicalProfileActivity extends AppCompatActivity {
 
                     tvName.setText(user.getName());
                     tvEmail.setText(user.getEmail());
-                    if(user.getGender().equals("true")) {
-                        tvGender.setText("Gender: Male" );
-                    } else {
-                        tvGender.setText("Gender: Female");
-                    }
-                    tvAge.setText("Age: " + user.getAge());
-                    tvHeight.setText("Height: " + user.getHeight());
-                    tvWeight.setText("Weight: " + user.getWeight());
-                    tvActivity.setText("Activity Level: " + user.getActivityLevel());
-                    tvBMI.setText("BMI: " + user.getBmi());
-                    tvBMR.setText("BMR: " + user.getBmr());
-                    tvTDEE.setText("TDEE: " + user.getTdee());
+                    tvGender.setText(user.getGender());
+                    tvAge.setText(user.getAge().toString());
+                    tvHeight.setText(""+user.getHeight());
+                    tvWeight.setText("" + user.getWeight());
+                    tvActivity.setText("" + user.getActivityLevel());
+                    tvBMI.setText("" + user.getBmi());
+                    tvBMR.setText("" + user.getBmr());
+                    tvTDEE.setText("" + user.getTdee());
                     
-                    // Update target and adjustment display
                     updateTargetAndAdjustment();
                 } else {
                     Toast.makeText(PhysicalProfileActivity.this, "Không thể tải dữ liệu người dùng", Toast.LENGTH_SHORT).show();
@@ -108,7 +113,6 @@ public class PhysicalProfileActivity extends AppCompatActivity {
             }
         });
 
-        // Nút chỉnh sửa
         findViewById(R.id.btnRegister).setOnClickListener(v -> {
             startActivity(new android.content.Intent(this, EditPhysicalProfile.class));
         });
@@ -123,12 +127,10 @@ public class PhysicalProfileActivity extends AppCompatActivity {
         Button btnCancel = dialogView.findViewById(R.id.btn_cancel);
         Button btnSave = dialogView.findViewById(R.id.btn_save);
         
-        // Display current weight
         if (currentWeight > 0) {
             tvCurrentWeight.setText((int)currentWeight + " kg");
         }
         
-        // Pre-fill with existing target weight if set
         if (targetWeight != -1) {
             etTargetWeight.setText(String.valueOf((int)targetWeight));
         }
@@ -173,7 +175,8 @@ public class PhysicalProfileActivity extends AppCompatActivity {
             return;
         }
         
-        // Calculate and display target
+        isWeightLoss = targetWeight < currentWeight;
+        
         if (targetWeight < currentWeight) {
             tvTarget.setText("Giảm xuống " + (int)targetWeight + " kg");
         } else if (targetWeight > currentWeight) {
@@ -182,15 +185,8 @@ public class PhysicalProfileActivity extends AppCompatActivity {
             tvTarget.setText("Target: " + (int)targetWeight + " kg");
         }
         
-        // Calculate and display adjustment level
-        double weightDiff = Math.abs(targetWeight - currentWeight);
-        if (targetWeight < currentWeight) {
-            tvAdjustment.setText("Cắt giảm " + (int)weightDiff + " kg");
-        } else if (targetWeight > currentWeight) {
-            tvAdjustment.setText("Tăng thêm " + (int)weightDiff + " kg");
-        } else {
-            tvAdjustment.setText("Giữ nguyên");
-        }
+        String prefix = isWeightLoss ? "Cắt giảm" : "Tăng thêm";
+        tvAdjustment.setText(prefix + " " + selectedAdjustmentLevel + " kcal/ngày");
     }
     
     private void saveTargetWeight() {
@@ -198,5 +194,61 @@ public class PhysicalProfileActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = prefs.edit();
         editor.putFloat(KEY_TARGET_WEIGHT, (float)targetWeight);
         editor.apply();
+    }
+    
+    private void saveAdjustmentLevel() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putInt(KEY_ADJUSTMENT_LEVEL, selectedAdjustmentLevel);
+        editor.apply();
+    }
+    
+    private void showAdjustmentDialog() {
+        if (targetWeight == -1) {
+            Toast.makeText(this, "Vui lòng đặt mục tiêu cân nặng trước", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_adjustment_level, null);
+        
+        TextView tvDialogTitle = dialogView.findViewById(R.id.tv_dialog_title);
+        RecyclerView rvAdjustmentOptions = dialogView.findViewById(R.id.rv_adjustment_options);
+        Button btnCancel = dialogView.findViewById(R.id.btn_cancel);
+        Button btnSave = dialogView.findViewById(R.id.btn_save);
+        
+        if (isWeightLoss) {
+            tvDialogTitle.setText("Thay đổi mức độ cắt giảm");
+        } else {
+            tvDialogTitle.setText("Thay đổi mức độ tăng cân");
+        }
+        
+        List<Integer> options = new ArrayList<>();
+        options.add(275);
+        options.add(500);
+        options.add(1000);
+        
+        rvAdjustmentOptions.setLayoutManager(new LinearLayoutManager(this));
+        AdjustmentOptionAdapter adapter = new AdjustmentOptionAdapter(options, selectedAdjustmentLevel, isWeightLoss);
+        rvAdjustmentOptions.setAdapter(adapter);
+        
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        
+        btnSave.setOnClickListener(v -> {
+            Integer selectedOption = adapter.getSelectedOption();
+            if (selectedOption != null) {
+                selectedAdjustmentLevel = selectedOption;
+                saveAdjustmentLevel();
+                updateTargetAndAdjustment();
+                dialog.dismiss();
+                
+                Toast.makeText(this, "Đã lưu mức độ điều chỉnh", Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        dialog.show();
     }
 }
