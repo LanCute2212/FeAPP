@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <!-- Icon and Title -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_plate"
+            app:tint="#4CAF50"
+            android:background="@drawable/bg_circle_primary"
+            android:padding="12dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Mục tiêu cân nặng"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/poppins_bold"/>
+
+    </LinearLayout>
+
+    <!-- Current Weight Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#F0F7F0">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_fire"
+                app:tint="#4CAF50"
+                android:contentDescription="Current weight"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cân nặng hiện tại"
+                    android:textSize="14sp"
+                    android:textColor="#666666"
+                    android:fontFamily="@font/poppins_regular"/>
+
+                <TextView
+                    android:id="@+id/tv_current_weight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-- kg"
+                    android:textSize="20sp"
+                    android:textColor="#4CAF50"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/poppins_bold"/>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Target Weight Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nhập mục tiêu cân nặng"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#333333"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="@font/poppins_bold"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Cân nặng mục tiêu (kg)"
+        android:layout_marginBottom="8dp"
+        app:boxStrokeColor="#4CAF50"
+        app:hintTextColor="#999999"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_target_weight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"
+            android:textSize="16sp"
+            android:fontFamily="@font/poppins_regular"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Info Text -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="💡 Nhập số kilogam bạn muốn đạt được"
+        android:textSize="13sp"
+        android:textColor="#666666"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="@font/poppins_regular"/>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="Hủy"
+            android:textColor="#666666"
+            android:background="@android:color/transparent"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/poppins_semi_bold"
+            android:textAllCaps="false"/>
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="Lưu lại"
+            android:textColor="#FFFFFF"
+            android:background="#4CAF50"
+            android:elevation="4dp"
+            android:fontFamily="@font/poppins_bold"
+            android:textAllCaps="false"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+

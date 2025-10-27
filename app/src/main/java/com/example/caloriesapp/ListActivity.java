@@ -2,6 +2,7 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.se.omapi.Session;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import com.example.caloriesapp.dto.response.ActivityResponse;
 import com.example.caloriesapp.dto.response.ActivityLogResponse;
 import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.model.ActivityItem;
+import com.example.caloriesapp.session.SessionManager;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -32,10 +34,22 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ListActivity extends AppCompatActivity {
     private ActivityAdapter activityAdapter;
     private static final String BASE_URL = "http://localhost:8081/";
+
+    private SessionManager sessionManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listactivity);
+
+        sessionManager = new SessionManager(this);
+
+        if(!sessionManager.isLoggedIn()) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
 
         findViewById(R.id.cancel).setOnClickListener(v -> {
             Intent intent = new Intent(ListActivity.this, HomePageActivity.class);
@@ -251,7 +265,7 @@ public class ListActivity extends AppCompatActivity {
                 }
 
                 LogActivityRequest request = new LogActivityRequest();
-                request.setUserId(1);
+                request.setUserId(sessionManager.getUserId());
                 request.setActivityId(position+1);
                 request.setDurationInMinutes(durationMinutes);
                 

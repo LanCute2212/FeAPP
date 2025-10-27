@@ -3,9 +3,9 @@ package com.example.caloriesapp.apiclient;
 import com.example.caloriesapp.dto.request.PhysicalEditProfileForm;
 import com.example.caloriesapp.dto.request.UserLoginForm;
 import com.example.caloriesapp.dto.request.UserRegisterForm;
+import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.dto.response.LoginResponse;
 import com.example.caloriesapp.dto.response.PhysicalProfileForm;
-import com.example.caloriesapp.dto.response.UpdatePhysicalProfileForm;
 
 import java.util.Map;
 
@@ -20,12 +20,12 @@ public interface UserClient {
     @POST("api/register")
     Call<Map<String, Object>> registerUser(@Body UserRegisterForm userRegisterForm);
     @POST("api/login")
-    Call<LoginResponse> login(@Body UserLoginForm userLoginForm);
+    Call<BaseResponse<LoginResponse>> login(@Body UserLoginForm userLoginForm);
 
     @PUT("api/user")
     Call<Void> update(@Query("email") String email, @Body PhysicalEditProfileForm form);
 
-    @GET("api/user/getInfo")
-    Call<PhysicalProfileForm> getInfo(@Query("email") String email);
+    @GET("api/user/getInfor")
+    Call<BaseResponse<PhysicalProfileForm>> getInfo(@Query("email") String email);
 
 }

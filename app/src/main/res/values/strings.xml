@@ -16,8 +16,9 @@
     <string name="enter_your_phone_number">Enter your phone number</string>
     <string name="enter_your_password">Enter your password</string>
     <string name="list_activity">List Activity</string>
+  <string name="health_fitness_stats"><![CDATA[Health & Fitness Stats]]></string>
 
-    <string-array name="languages">
+  <string-array name="languages">
         <item>English</item>
         <item>Vietnamese</item>
     </string-array>
