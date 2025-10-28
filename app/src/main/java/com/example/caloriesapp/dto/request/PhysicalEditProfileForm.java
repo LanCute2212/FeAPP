@@ -1,21 +1,13 @@
 package com.example.caloriesapp.dto.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 public class PhysicalEditProfileForm {
 
-    private int id;
     private int age;
     private String gender;
     private double weight;
     private double height;
-    private Double levelActivity;
+    private Double activityLevel;
     private Double goal;
-
-    private String email;
 
     public int getAge() {
         return age;
@@ -23,22 +15,6 @@ public class PhysicalEditProfileForm {
 
     public void setAge(int age) {
         this.age = age;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getGender() {
@@ -66,11 +42,11 @@ public class PhysicalEditProfileForm {
     }
 
     public Double getActivityLevel() {
-        return levelActivity;
+        return activityLevel;
     }
 
     public void setActivityLevel(Double activityLevel) {
-        this.levelActivity = levelActivity;
+        this.activityLevel = activityLevel;
     }
 
     public Double getGoal() {
@@ -81,14 +57,15 @@ public class PhysicalEditProfileForm {
         this.goal = goal;
     }
 
-    public PhysicalEditProfileForm() {}
-    public PhysicalEditProfileForm(int id, int age, String gender, double weight, double height, Double levelActivity, Double goal) {
-        this.id = id;
+    public PhysicalEditProfileForm() {
+    }
+
+    public PhysicalEditProfileForm(int id, int age, String gender, double weight, double height, Double activityLevel, Double goal) {
         this.age = age;
         this.gender = gender;
         this.weight = weight;
         this.height = height;
-        this.levelActivity = levelActivity;
+        this.activityLevel = activityLevel;
         this.goal = goal;
     }
 }
