@@ -241,39 +241,74 @@
     <androidx.cardview.widget.CardView
       android:id="@+id/card_calories"
       android:layout_width="0dp"
-      android:layout_height="220dp"
+      android:layout_height="wrap_content"
       android:layout_marginTop="12dp"
-      android:padding="16dp"
-      app:cardCornerRadius="16dp"
-      app:cardElevation="4dp"
+      android:layout_marginHorizontal="4dp"
+      android:paddingBottom="20dp"
+      app:cardCornerRadius="20dp"
+      app:cardElevation="6dp"
+      app:cardBackgroundColor="#FFFFFF"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/toggle_period">
+      app:layout_constraintTop_toBottomOf="@id/toggle_period"
+      app:layout_constraintBottom_toBottomOf="@id/nutrition_progress_section"
+      app:layout_constraintVertical_bias="0.0">
 
       <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginHorizontal="5dp">
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:paddingTop="20dp">
+        
+        <!-- Title -->
+        <TextView
+          android:id="@+id/title_cal"
+          android:textStyle="bold"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:fontFamily="@font/poppins_bold"
+          android:text="Calories and Nutritions"
+          android:textColor="#111111"
+          android:textSize="18sp"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-          android:id="@+id/apple_img"
+        <FrameLayout
+          android:id="@+id/apple_container"
           android:layout_width="150dp"
           android:layout_height="150dp"
           android:layout_marginStart="16dp"
-          android:contentDescription="apple"
-          android:src="@drawable/ic_danap"
+          android:layout_marginTop="12dp"
           app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toBottomOf="@id/title_cal" />
+          app:layout_constraintTop_toBottomOf="@id/title_cal">
+
+          <ImageView
+            android:id="@+id/apple_img_background"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:contentDescription="apple"
+            android:src="@drawable/ic_danap"
+            android:alpha="0.2" />
+
+          <ImageView
+            android:id="@+id/apple_img"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:contentDescription="apple"
+            android:src="@drawable/ic_danap" />
+        </FrameLayout>
 
         <LinearLayout
           android:id="@+id/right_stats"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_marginEnd="8dp"
+          android:layout_marginEnd="16dp"
+          android:layout_marginTop="4dp"
           android:gravity="center_vertical"
           android:orientation="vertical"
           app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintTop_toBottomOf="@id/title_cal">
+          app:layout_constraintTop_toBottomOf="@id/title_cal"
+          app:layout_constraintBottom_toTopOf="@id/nutrition_divider">
 
           <LinearLayout
             android:layout_width="wrap_content"
@@ -284,15 +319,15 @@
 
             <ImageView
               android:id="@+id/lightning"
-              android:layout_width="20dp"
-              android:layout_height="20dp"
+              android:layout_width="22dp"
+              android:layout_height="22dp"
               android:contentDescription="energy"
               android:src="@drawable/ic_lightning" />
 
-            <LinearLayout
+              <LinearLayout
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:layout_marginStart="8dp"
+              android:layout_marginStart="10dp"
               android:orientation="vertical">
 
               <TextView
@@ -300,35 +335,37 @@
                 android:layout_height="wrap_content"
                 android:text="Intake"
                 android:textColor="#6B6B6B"
-                android:textSize="12sp" />
+                android:textSize="11sp"
+                android:letterSpacing="0.02" />
 
               <TextView
+                android:id="@+id/tv_intake"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="553"
                 android:textColor="#111111"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
             </LinearLayout>
           </LinearLayout>
 
           <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="10dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <ImageView
-              android:layout_width="20dp"
-              android:layout_height="20dp"
+              android:layout_width="22dp"
+              android:layout_height="22dp"
               android:contentDescription="remaining"
               android:src="@drawable/ic_plate" />
 
             <LinearLayout
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:layout_marginStart="8dp"
+              android:layout_marginStart="10dp"
               android:orientation="vertical">
 
               <TextView
@@ -336,15 +373,17 @@
                 android:layout_height="wrap_content"
                 android:text="Remaining"
                 android:textColor="#6B6B6B"
-                android:textSize="12sp" />
+                android:textSize="11sp"
+                android:letterSpacing="0.02" />
 
               <TextView
+                android:id="@+id/tv_remaining"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="553"
                 android:textColor="#111111"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
             </LinearLayout>
           </LinearLayout>
 
@@ -356,15 +395,15 @@
 
             <ImageView
               android:id="@+id/fire"
-              android:layout_width="20dp"
-              android:layout_height="20dp"
+              android:layout_width="22dp"
+              android:layout_height="22dp"
               android:contentDescription="burn"
               android:src="@drawable/ic_fire" />
 
             <LinearLayout
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:layout_marginStart="8dp"
+              android:layout_marginStart="10dp"
               android:orientation="vertical">
 
               <TextView
@@ -372,99 +411,261 @@
                 android:layout_height="wrap_content"
                 android:text="Consumed"
                 android:textColor="#6B6B6B"
-                android:textSize="12sp" />
+                android:textSize="11sp"
+                android:letterSpacing="0.02" />
 
               <TextView
+                android:id="@+id/tv_consumed"
                 android:textStyle="bold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="0"
                 android:textColor="#111111"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
             </LinearLayout>
           </LinearLayout>
         </LinearLayout>
 
-        <!-- Large apple image on left -->
+        <!-- Divider -->
+        <View
+          android:id="@+id/nutrition_divider"
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginHorizontal="24dp"
+          android:layout_marginTop="20dp"
+          android:layout_marginBottom="28dp"
+          android:background="@android:color/darker_gray"
+          android:alpha="0.3"
+          app:layout_constraintTop_toBottomOf="@id/apple_container" />
+
+        <!-- Nutrition Progress Bars Section (2x2 Grid) -->
         <LinearLayout
-          android:id="@+id/nutrition_bars"
-          android:layout_width="0dp"
-          android:layout_height="20dp"
+          android:id="@+id/nutrition_progress_section"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
           android:layout_marginTop="8dp"
+          android:layout_marginBottom="16dp"
+          android:layout_marginHorizontal="8dp"
           android:orientation="horizontal"
-          app:layout_constraintBottom_toBottomOf="parent"
-          app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toStartOf="parent">
+          android:paddingHorizontal="16dp"
+          android:paddingTop="12dp"
+          android:paddingBottom="8dp"
+          android:background="#F8F9FA"
+          android:layout_gravity="center"
+          app:layout_constraintTop_toBottomOf="@id/nutrition_divider"
+          app:layout_constraintBottom_toBottomOf="parent">
 
-          <!-- Carbs -->
+          <!-- Left Column -->
           <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:layout_marginEnd="8dp"
+            android:orientation="vertical">
 
-            <ImageView
-              android:layout_width="15dp"
-              android:layout_height="15dp"
-              android:layout_marginRight="5dp"
-              android:contentDescription="burn"
-              android:src="@drawable/ic_carb" />
-
-            <TextView
-              android:layout_width="wrap_content"
+            <!-- Carbs Progress -->
+            <LinearLayout
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:text="Carbs"
-              android:textColor="#6B6B6B"
-              android:textSize="12sp" />
+              android:layout_marginBottom="12dp"
+              android:orientation="vertical">
+
+            <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+              <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="carbs"
+                android:src="@drawable/ic_carb" />
+
+              <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Carbs"
+                android:textColor="#111111"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+              <TextView
+                android:id="@+id/tv_carbs_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/442g"
+                android:textColor="#6B6B6B"
+                android:textSize="12sp" />
+            </LinearLayout>
+
+            <ProgressBar
+              android:id="@+id/progress_carbs"
+              style="?android:attr/progressBarStyleHorizontal"
+              android:layout_width="match_parent"
+              android:layout_height="8dp"
+              android:layout_marginTop="6dp"
+              android:max="100"
+              android:progress="0"
+              android:progressTint="#4CAF50" />
+            </LinearLayout>
+
+            <!-- Protein Progress -->
+            <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+            <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+              <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="protein"
+                android:src="@drawable/ic_protein" />
+
+              <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Protein"
+                android:textColor="#111111"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+              <TextView
+                android:id="@+id/tv_protein_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/203g"
+                android:textColor="#6B6B6B"
+                android:textSize="12sp" />
+            </LinearLayout>
+
+            <ProgressBar
+              android:id="@+id/progress_protein"
+              style="?android:attr/progressBarStyleHorizontal"
+              android:layout_width="match_parent"
+              android:layout_height="8dp"
+              android:layout_marginTop="6dp"
+              android:max="100"
+              android:progress="0"
+              android:progressTint="#FF9800" />
+            </LinearLayout>
 
           </LinearLayout>
 
-          <!-- Protein -->
+          <!-- Right Column -->
           <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:layout_marginStart="8dp"
+            android:orientation="vertical">
 
-            <ImageView
-              android:layout_width="15dp"
-              android:layout_height="15dp"
-              android:layout_marginRight="5dp"
-              android:contentDescription="burn"
-              android:src="@drawable/ic_protein" />
-
-            <TextView
-              android:layout_width="wrap_content"
+            <!-- Fat Progress -->
+            <LinearLayout
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:text="Protein"
-              android:textColor="#6B6B6B"
-              android:textSize="12sp" />
+              android:layout_marginBottom="12dp"
+              android:orientation="vertical">
 
-          </LinearLayout>
-
-          <!-- Fat -->
-          <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <ImageView
-              android:layout_width="15dp"
-              android:layout_height="15dp"
-              android:layout_marginRight="5dp"
-              android:contentDescription="burn"
-              android:src="@drawable/ic_fat" />
-
-            <TextView
-              android:layout_width="wrap_content"
+            <LinearLayout
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:text="Fat"
-              android:textColor="#6B6B6B"
-              android:textSize="12sp" />
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+              <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="fat"
+                android:src="@drawable/ic_fat" />
+
+              <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Fat"
+                android:textColor="#111111"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+              <TextView
+                android:id="@+id/tv_fat_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/106g"
+                android:textColor="#6B6B6B"
+                android:textSize="12sp" />
+            </LinearLayout>
+
+            <ProgressBar
+              android:id="@+id/progress_fat"
+              style="?android:attr/progressBarStyleHorizontal"
+              android:layout_width="match_parent"
+              android:layout_height="8dp"
+              android:layout_marginTop="6dp"
+              android:max="100"
+              android:progress="0"
+              android:progressTint="#F44336" />
+            </LinearLayout>
+
+            <!-- Fiber Progress -->
+            <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+            <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+              <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="fiber"
+                android:src="@drawable/ic_carb" />
+
+              <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Fiber"
+                android:textColor="#111111"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+              <TextView
+                android:id="@+id/tv_fiber_progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/49g"
+                android:textColor="#6B6B6B"
+                android:textSize="12sp" />
+            </LinearLayout>
+
+            <ProgressBar
+              android:id="@+id/progress_fiber"
+              style="?android:attr/progressBarStyleHorizontal"
+              android:layout_width="match_parent"
+              android:layout_height="8dp"
+              android:layout_marginTop="6dp"
+              android:max="100"
+              android:progress="0"
+              android:progressTint="#9C27B0" />
+            </LinearLayout>
 
           </LinearLayout>
 
@@ -475,14 +676,14 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:gravity="center"
-          android:text="Intake\n553"
+          android:text="Intake\n0"
           android:textAlignment="center"
           android:textColor="#FF8A00"
           android:textSize="16sp"
-          app:layout_constraintBottom_toBottomOf="@id/apple_img"
-          app:layout_constraintEnd_toEndOf="@id/apple_img"
-          app:layout_constraintStart_toStartOf="@id/apple_img"
-          app:layout_constraintTop_toTopOf="@id/apple_img"
+          app:layout_constraintBottom_toBottomOf="@id/apple_container"
+          app:layout_constraintEnd_toEndOf="@id/apple_container"
+          app:layout_constraintStart_toStartOf="@id/apple_container"
+          app:layout_constraintTop_toTopOf="@id/apple_container"
           app:layout_constraintVertical_bias="0.6" />
 
         <!-- Right side small stats -->
@@ -495,19 +696,6 @@
           android:textColor="#6B6B6B"
           android:textSize="13sp"
           app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Nutrition bars at bottom of card -->
-        <TextView
-          android:id="@+id/title_cal"
-          android:textStyle="bold"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:fontFamily="@font/poppins_bold"
-          android:text="Calories and Nutritions"
-          android:textColor="#111111"
-          android:textSize="18sp"
-          app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent" />
 
       </androidx.constraintlayout.widget.ConstraintLayout>
@@ -557,6 +745,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:nestedScrollingEnabled="false" />
+
+          <!-- Empty state message -->
+          <TextView
+            android:id="@+id/tv_empty_activity"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You haven't do anything today!"
+            android:textSize="16sp"
+            android:textColor="#999999"
+            android:gravity="center"
+            android:padding="20dp"
+            android:visibility="gone" />
 
         </LinearLayout>
 

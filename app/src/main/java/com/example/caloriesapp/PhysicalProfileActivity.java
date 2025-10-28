@@ -92,7 +92,7 @@ public class PhysicalProfileActivity extends AppCompatActivity {
 
                     tvName.setText(user.getName());
                     tvEmail.setText(user.getEmail());
-                    tvGender.setText(user.getGender());
+                    tvGender.setText(user.getGender().equals("true") ? "Male" : "Female");
                     tvAge.setText(user.getAge().toString());
                     tvHeight.setText(""+user.getHeight());
                     tvWeight.setText("" + user.getWeight());

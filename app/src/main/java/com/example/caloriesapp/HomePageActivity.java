@@ -1,8 +1,11 @@
 package com.example.caloriesapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,7 +16,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.caloriesapp.adapter.ActivityAdapter;
+import com.example.caloriesapp.apiclient.ApiClient;
+import com.example.caloriesapp.apiclient.UserClient;
+import com.example.caloriesapp.dto.response.BaseResponse;
+import com.example.caloriesapp.dto.response.PhysicalProfileForm;
 import com.example.caloriesapp.model.ActivityItem;
+import com.example.caloriesapp.session.SessionManager;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,9 +35,23 @@ public class HomePageActivity extends AppCompatActivity {
 
   private static final int ADD_ACTIVITY_REQUEST_CODE = 1001;
   private static final int LIST_ACTIVITY_REQUEST_CODE = 1002;
+  private static final String PREFS_NAME = "PhysicalProfile";
+  private static final String KEY_TARGET_WEIGHT = "target_weight";
+  private static final String KEY_ADJUSTMENT_LEVEL = "adjustment_level";
+  
   private String email;
   private ActivityAdapter activityAdapter;
   private List<ActivityItem> activityList;
+  private SessionManager sessionManager;
+  private TextView tvIntake, tvRemaining, tvConsumed, tvDaNap;
+  private TextView tvCarbsProgress, tvProteinProgress, tvFatProgress, tvFiberProgress;
+  private ProgressBar progressCarbs, progressProtein, progressFat, progressFiber;
+  private ImageView appleImg;
+  
+  private double tdee = 0;
+  private double targetWeight = -1;
+  private int selectedAdjustmentLevel = 500;
+  private boolean isWeightLoss = true;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +59,32 @@ public class HomePageActivity extends AppCompatActivity {
     setContentView(R.layout.activity_topbar);
 
     email = getIntent().getStringExtra("email");
+    sessionManager = new SessionManager(this);
+    if (email == null) {
+      email = sessionManager.getEmail();
+    }
+    
+    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+    targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
+    selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
+    
+    tvIntake = findViewById(R.id.tv_intake);
+    tvRemaining = findViewById(R.id.tv_remaining);
+    tvConsumed = findViewById(R.id.tv_consumed);
+    tvDaNap = findViewById(R.id.da_nap);
+    appleImg = findViewById(R.id.apple_img);
+    
+    // Nutrition progress bars
+    progressCarbs = findViewById(R.id.progress_carbs);
+    progressProtein = findViewById(R.id.progress_protein);
+    progressFat = findViewById(R.id.progress_fat);
+    progressFiber = findViewById(R.id.progress_fiber);
+    
+    // Nutrition progress TextViews
+    tvCarbsProgress = findViewById(R.id.tv_carbs_progress);
+    tvProteinProgress = findViewById(R.id.tv_protein_progress);
+    tvFatProgress = findViewById(R.id.tv_fat_progress);
+    tvFiberProgress = findViewById(R.id.tv_fiber_progress);
 
     findViewById(R.id.icon_bell).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
@@ -92,6 +144,8 @@ public class HomePageActivity extends AppCompatActivity {
 
     setupActivitiesList();
     populateWeekDates();
+    
+    loadUserPhysicalProfile();
   }
 
   @Override
@@ -174,6 +228,9 @@ public class HomePageActivity extends AppCompatActivity {
     recyclerView.setAdapter(activityAdapter);
 
     setupSwipeToDelete(recyclerView);
+    
+    // Update summary to show empty state if list is empty
+    updateSummaryStats();
   }
 
   private void setupSwipeToDelete(RecyclerView recyclerView) {
@@ -302,6 +359,8 @@ public class HomePageActivity extends AppCompatActivity {
           if (summaryStatsLayout != null) {
             summaryStatsLayout.setVisibility(View.VISIBLE);
           }
+          // Update summary stats to show/hide empty state
+          updateSummaryStats();
         } else {
           // Collapse: hide activities container and summary
           if (activitiesContainer != null) {
@@ -316,8 +375,6 @@ public class HomePageActivity extends AppCompatActivity {
         }
       });
     }
-    
-    updateSummaryStats();
   }
   
   private void updateSummaryStats() {
@@ -325,6 +382,8 @@ public class HomePageActivity extends AppCompatActivity {
     TextView totalCalories = findViewById(R.id.total_calories);
     TextView totalDuration = findViewById(R.id.total_duration);
     TextView activitySummaryText = findViewById(R.id.activity_summary_text);
+    TextView tvEmptyActivity = findViewById(R.id.tv_empty_activity);
+    RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
     
     if (totalActivitiesCount == null || activityList == null) {
       return;
@@ -349,5 +408,164 @@ public class HomePageActivity extends AppCompatActivity {
     if (activitySummaryText != null) {
       activitySummaryText.setText(activityCount + " activities");
     }
+    
+    // Show/hide empty state message
+    if (tvEmptyActivity != null && recyclerView != null) {
+      if (activityCount == 0) {
+        tvEmptyActivity.setVisibility(View.VISIBLE);
+        recyclerView.setVisibility(View.GONE);
+      } else {
+        tvEmptyActivity.setVisibility(View.GONE);
+        recyclerView.setVisibility(View.VISIBLE);
+      }
+    }
+    
+    updateCalorieStats();
+  }
+  
+  private void loadUserPhysicalProfile() {
+    if (email == null || email.isEmpty()) {
+      return;
+    }
+    
+    UserClient userClient = ApiClient.getClient().create(UserClient.class);
+    Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(email);
+    
+    call.enqueue(new Callback<BaseResponse<PhysicalProfileForm>>() {
+      @Override
+      public void onResponse(Call<BaseResponse<PhysicalProfileForm>> call, Response<BaseResponse<PhysicalProfileForm>> response) {
+        if (response.isSuccessful() && response.body() != null && !response.body().isError()) {
+          PhysicalProfileForm user = response.body().getData();
+          tdee = user.getTdee();
+          
+          if (targetWeight != -1 && user.getWeight() > 0) {
+            isWeightLoss = targetWeight < user.getWeight();
+          }
+          
+          updateCalorieStats();
+        }
+      }
+      
+      @Override
+      public void onFailure(Call<BaseResponse<PhysicalProfileForm>> call, Throwable t) {
+      }
+    });
+  }
+  
+  private void updateCalorieStats() {
+    if (tdee == 0) {
+      return;
+    }
+    
+    double intake;
+    if (targetWeight == -1) {
+      intake = tdee;
+    } else {
+      if (isWeightLoss) {
+        intake = tdee - selectedAdjustmentLevel;
+      } else {
+        intake = tdee + selectedAdjustmentLevel;
+      }
+    }
+    
+    double consumedCalories = 1200; // TODO: Replace with actual meal data
+    
+    double burnedCalories = 0;
+    if (activityList != null) {
+      for (ActivityItem activity : activityList) {
+        burnedCalories += activity.getCalories();
+      }
+    }
+    
+    double remaining = intake - consumedCalories;
+    
+    if (tvIntake != null) {
+      tvIntake.setText(String.valueOf((int)intake));
+    }
+    if (tvRemaining != null) {
+      tvRemaining.setText(String.valueOf((int)remaining));
+    }
+    if (tvConsumed != null) {
+      tvConsumed.setText(String.valueOf((int)burnedCalories));
+    }
+    
+    // Update intake display in the apple
+    if (tvDaNap != null) {
+      tvDaNap.setText("Intake\n" + (int)intake);
+    }
+    
+    // Calculate and update apple completion percentage
+    if (appleImg != null && intake > 0) {
+      double completionPercent = consumedCalories / intake;
+      // Clamp between 0 and 1
+      completionPercent = Math.max(0.0, Math.min(1.0, completionPercent));
+      // Set alpha: 0 = empty (0% consumed), 1 = full (100% consumed)
+      appleImg.setAlpha((float)completionPercent);
+    } else if (appleImg != null) {
+      appleImg.setAlpha(0.2f);
+    }
+    
+    // Update nutrition progress bars
+    updateNutritionProgress();
+  }
+  
+  private void updateNutritionProgress() {
+    // Hardcoded values for demonstration - replace with actual meal data
+    double carbsConsumed = 0;
+    double proteinConsumed = 0;
+    double fatConsumed = 0;
+    double fiberConsumed = 0;
+    
+    // Target values (these would come from user's profile)
+    double carbsTarget = 442;
+    double proteinTarget = 203;
+    double fatTarget = 106;
+    double fiberTarget = 49;
+    
+    // Update TextViews
+    if (tvCarbsProgress != null) {
+      tvCarbsProgress.setText(String.format("%.0f/%.0fg", carbsConsumed, carbsTarget));
+    }
+    if (tvProteinProgress != null) {
+      tvProteinProgress.setText(String.format("%.0f/%.0fg", proteinConsumed, proteinTarget));
+    }
+    if (tvFatProgress != null) {
+      tvFatProgress.setText(String.format("%.0f/%.0fg", fatConsumed, fatTarget));
+    }
+    if (tvFiberProgress != null) {
+      tvFiberProgress.setText(String.format("%.0f/%.0fg", fiberConsumed, fiberTarget));
+    }
+    
+    // Update ProgressBars (percentage)
+    if (progressCarbs != null && carbsTarget > 0) {
+      int carbsPercent = (int)((carbsConsumed / carbsTarget) * 100);
+      progressCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
+    }
+    
+    if (progressProtein != null && proteinTarget > 0) {
+      int proteinPercent = (int)((proteinConsumed / proteinTarget) * 100);
+      progressProtein.setProgress(Math.min(100, Math.max(0, proteinPercent)));
+    }
+    
+    if (progressFat != null && fatTarget > 0) {
+      int fatPercent = (int)((fatConsumed / fatTarget) * 100);
+      progressFat.setProgress(Math.min(100, Math.max(0, fatPercent)));
+    }
+    
+    if (progressFiber != null && fiberTarget > 0) {
+      int fiberPercent = (int)((fiberConsumed / fiberTarget) * 100);
+      progressFiber.setProgress(Math.min(100, Math.max(0, fiberPercent)));
+    }
+  }
+  
+  @Override
+  protected void onResume() {
+    super.onResume();
+    
+    SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+    targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
+    selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
+    
+    updateCalorieStats();
   }
 }
