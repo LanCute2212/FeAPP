@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.request.PhysicalEditProfileForm;
+import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.session.SessionManager;
 
 import retrofit2.Call;
@@ -24,12 +25,15 @@ public class EditPhysicalProfile extends AppCompatActivity {
 
     private String email;
 
+    private int userId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editphysicalinformation);
 
         SessionManager sessionManager = new SessionManager(this);
+        userId = sessionManager.getUserId();
         email = sessionManager.getEmail();
         if (email == null || email.isEmpty()) {
             Toast.makeText(this, "Không có email người dùng", Toast.LENGTH_SHORT).show();
@@ -54,19 +58,16 @@ public class EditPhysicalProfile extends AppCompatActivity {
                 double activityLevel = Double.parseDouble(txtLevelActivity.getText().toString().trim());
                 double goal = Double.parseDouble(txtGoal.getText().toString().trim());
 
-
-
-                PhysicalEditProfileForm form = new PhysicalEditProfileForm(24,
+                PhysicalEditProfileForm form = new PhysicalEditProfileForm(userId,
                         age, gender, weight, height, activityLevel, goal
                 );
 
-
                 UserClient userClient = ApiClient.getClient().create(UserClient.class);
-                Call<Void> call = userClient.update(email, form);
+                Call<BaseResponse> call = userClient.update(email, form);
 
-                call.enqueue(new Callback<Void>() {
+                call.enqueue(new Callback<BaseResponse>() {
                     @Override
-                    public void onResponse(Call<Void> call, Response<Void> response) {
+                    public void onResponse(Call<BaseResponse> call, Response<BaseResponse> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(EditPhysicalProfile.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(EditPhysicalProfile.this, HomePageActivity.class));
@@ -76,7 +77,7 @@ public class EditPhysicalProfile extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<Void> call, Throwable t) {
+                    public void onFailure(Call<BaseResponse> call, Throwable t) {
                         Toast.makeText(EditPhysicalProfile.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });

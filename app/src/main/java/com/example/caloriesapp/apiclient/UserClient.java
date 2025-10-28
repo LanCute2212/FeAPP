@@ -22,8 +22,8 @@ public interface UserClient {
     @POST("api/login")
     Call<BaseResponse<LoginResponse>> login(@Body UserLoginForm userLoginForm);
 
-    @PUT("api/user")
-    Call<Void> update(@Query("email") String email, @Body PhysicalEditProfileForm form);
+    @POST("api/user/updateProfile")
+    Call<BaseResponse> update(@Query("email") String email, @Body PhysicalEditProfileForm form);
 
     @GET("api/user/getInfor")
     Call<BaseResponse<PhysicalProfileForm>> getInfo(@Query("email") String email);
