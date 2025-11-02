@@ -2,18 +2,27 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 
 import com.example.caloriesapp.adapter.ActivityAdapter;
 import com.example.caloriesapp.apiclient.ApiClient;
@@ -144,6 +153,18 @@ public class HomePageActivity extends AppCompatActivity {
 
     setupActivitiesList();
     populateWeekDates();
+    
+    // Setup diet mode click listener
+    View dietModeContainer = findViewById(R.id.diet_mode_container);
+    if (dietModeContainer != null) {
+      dietModeContainer.setOnClickListener(v -> showDietModeBottomSheet());
+    }
+    
+    // Apply underline to diet mode text
+    TextView tvDietMode = findViewById(R.id.tv_diet_mode);
+    if (tvDietMode != null) {
+      tvDietMode.setPaintFlags(tvDietMode.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+    }
     
     loadUserPhysicalProfile();
   }
@@ -558,6 +579,120 @@ public class HomePageActivity extends AppCompatActivity {
     }
   }
   
+  private void showDietModeBottomSheet() {
+    BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
+    View bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_diet_mode, null);
+    bottomSheetDialog.setContentView(bottomSheetView);
+    
+    // Close button
+    ImageView btnClose = bottomSheetView.findViewById(R.id.btn_close);
+    btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
+    
+    // Number pickers
+    NumberPicker npCarbs = bottomSheetView.findViewById(R.id.np_carbs);
+    NumberPicker npProtein = bottomSheetView.findViewById(R.id.np_protein);
+    NumberPicker npFat = bottomSheetView.findViewById(R.id.np_fat);
+    
+    // Set min/max values and initial values (default: 50% carbs, 23% protein, 27% fat)
+    npCarbs.setMinValue(0);
+    npCarbs.setMaxValue(100);
+    npCarbs.setValue(50);
+    
+    npProtein.setMinValue(0);
+    npProtein.setMaxValue(100);
+    npProtein.setValue(23);
+    
+    npFat.setMinValue(0);
+    npFat.setMaxValue(100);
+    npFat.setValue(27);
+    
+    // Improve NumberPicker appearance
+    setNumberPickerTextColor(npCarbs, 0xFF4CAF50);
+    setNumberPickerTextColor(npProtein, 0xFFF44336);
+    setNumberPickerTextColor(npFat, 0xFFFF9800);
+    
+    // Total percentage display
+    TextView tvTotalPercentage = bottomSheetView.findViewById(R.id.tv_total_percentage);
+    CardView cardTotalPercentage = bottomSheetView.findViewById(R.id.card_total_percentage);
+    updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
+    
+    // NumberPicker change listeners
+    NumberPicker.OnValueChangeListener valueChangeListener = (picker, oldVal, newVal) -> {
+      updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
+    };
+    
+    npCarbs.setOnValueChangedListener(valueChangeListener);
+    npProtein.setOnValueChangedListener(valueChangeListener);
+    npFat.setOnValueChangedListener(valueChangeListener);
+    
+    // Diet mode buttons
+    RecyclerView rvDietModes = bottomSheetView.findViewById(R.id.rv_diet_modes);
+    String[] dietModes = {"Cân Bằng", "Low Carb", "High Protein", "Keto", "Atkins", "Paleo", "Địa Trung Hải", "DASH", "Tùy Chỉnh"};
+    DietModeAdapter dietModeAdapter = new DietModeAdapter(dietModes, 0); // 0 = Cân Bằng selected by default
+    GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
+    gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+      @Override
+      public int getSpanSize(int position) {
+        return 1; // Each item spans 1 column
+      }
+    });
+    rvDietModes.setLayoutManager(gridLayoutManager);
+    // Add spacing between items
+    int spacing = (int) (8 * getResources().getDisplayMetrics().density);
+    rvDietModes.addItemDecoration(new GridSpacingItemDecoration(3, spacing, true));
+    rvDietModes.setAdapter(dietModeAdapter);
+    
+    // Save button
+    Button btnSave = bottomSheetView.findViewById(R.id.btn_save_diet_mode);
+    btnSave.setOnClickListener(v -> {
+      int selectedIndex = dietModeAdapter.getSelectedPosition();
+      String selectedDietMode = dietModes[selectedIndex];
+      
+      // Update the diet mode text in the main view
+      TextView tvDietMode = findViewById(R.id.tv_diet_mode);
+      if (tvDietMode != null) {
+        tvDietMode.setText(selectedDietMode);
+      }
+      
+      // TODO: Save the percentages and diet mode to SharedPreferences or API
+      
+      Toast.makeText(this, "Đã lưu chế độ ăn: " + selectedDietMode, Toast.LENGTH_SHORT).show();
+      bottomSheetDialog.dismiss();
+    });
+    
+    bottomSheetDialog.show();
+  }
+  
+  private void updateTotalPercentage(TextView tvTotal, CardView cardView, int carbs, int protein, int fat) {
+    int total = carbs + protein + fat;
+    tvTotal.setText(total + "%");
+    if (total == 100) {
+      tvTotal.setTextColor(0xFF4CAF50);
+      if (cardView != null) {
+        cardView.setCardBackgroundColor(0xFFE8F5E9); // Light green
+      }
+    } else {
+      tvTotal.setTextColor(0xFFF44336);
+      if (cardView != null) {
+        cardView.setCardBackgroundColor(0xFFFFEBEE); // Light red
+      }
+    }
+  }
+  
+  private void setNumberPickerTextColor(NumberPicker numberPicker, int color) {
+    try {
+      int count = numberPicker.getChildCount();
+      for (int i = 0; i < count; i++) {
+        View child = numberPicker.getChildAt(i);
+        if (child instanceof TextView) {
+          ((TextView) child).setTextColor(color);
+        }
+      }
+    } catch (Exception e) {
+      // Ignore if reflection fails
+    }
+  }
+  
   @Override
   protected void onResume() {
     super.onResume();
@@ -567,5 +702,100 @@ public class HomePageActivity extends AppCompatActivity {
     selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
     
     updateCalorieStats();
+  }
+  
+  // ItemDecoration for grid spacing
+  private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
+    private int spanCount;
+    private int spacing;
+    private boolean includeEdge;
+
+    GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
+      this.spanCount = spanCount;
+      this.spacing = spacing;
+      this.includeEdge = includeEdge;
+    }
+
+    @Override
+    public void getItemOffsets(@NonNull android.graphics.Rect outRect, @NonNull View view,
+        @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
+      int position = parent.getChildAdapterPosition(view);
+      int column = position % spanCount;
+
+      if (includeEdge) {
+        outRect.left = spacing - column * spacing / spanCount;
+        outRect.right = (column + 1) * spacing / spanCount;
+
+        if (position < spanCount) {
+          outRect.top = spacing;
+        }
+        outRect.bottom = spacing;
+      } else {
+        outRect.left = column * spacing / spanCount;
+        outRect.right = spacing - (column + 1) * spacing / spanCount;
+        if (position >= spanCount) {
+          outRect.top = spacing;
+        }
+      }
+    }
+  }
+  
+  // Simple adapter for diet mode buttons
+  private static class DietModeAdapter extends RecyclerView.Adapter<DietModeAdapter.DietModeViewHolder> {
+    private String[] dietModes;
+    private int selectedPosition;
+    
+    DietModeAdapter(String[] dietModes, int selectedPosition) {
+      this.dietModes = dietModes;
+      this.selectedPosition = selectedPosition;
+    }
+    
+    @NonNull
+    @Override
+    public DietModeViewHolder onCreateViewHolder(@NonNull android.view.ViewGroup parent, int viewType) {
+      View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_diet_mode_button, parent, false);
+      return new DietModeViewHolder(view);
+    }
+    
+    @Override
+    public void onBindViewHolder(@NonNull DietModeViewHolder holder, int position) {
+      holder.button.setText(dietModes[position]);
+      boolean isSelected = position == selectedPosition;
+      
+      if (isSelected) {
+        holder.button.setBackgroundResource(R.drawable.btn_diet_mode_selected);
+        holder.button.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
+        holder.button.setElevation(4f);
+      } else {
+        holder.button.setBackgroundResource(R.drawable.btn_diet_mode);
+        holder.button.setTextColor(android.graphics.Color.parseColor("#424242"));
+        holder.button.setElevation(0f);
+      }
+      
+      holder.button.setOnClickListener(v -> {
+        int oldPosition = selectedPosition;
+        selectedPosition = position;
+        notifyItemChanged(oldPosition);
+        notifyItemChanged(selectedPosition);
+      });
+    }
+    
+    @Override
+    public int getItemCount() {
+      return dietModes.length;
+    }
+    
+    int getSelectedPosition() {
+      return selectedPosition;
+    }
+    
+    static class DietModeViewHolder extends RecyclerView.ViewHolder {
+      Button button;
+      
+      DietModeViewHolder(@NonNull View itemView) {
+        super(itemView);
+        button = itemView.findViewById(R.id.btn_diet_mode);
+      }
+    }
   }
 }

@@ -250,9 +250,7 @@
       app:cardBackgroundColor="#FFFFFF"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/toggle_period"
-      app:layout_constraintBottom_toBottomOf="@id/nutrition_progress_section"
-      app:layout_constraintVertical_bias="0.0">
+      app:layout_constraintTop_toBottomOf="@id/toggle_period">
 
       <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -452,8 +450,7 @@
           android:paddingBottom="8dp"
           android:background="#F8F9FA"
           android:layout_gravity="center"
-          app:layout_constraintTop_toBottomOf="@id/nutrition_divider"
-          app:layout_constraintBottom_toBottomOf="parent">
+          app:layout_constraintTop_toBottomOf="@id/nutrition_divider">
 
           <!-- Left Column -->
           <LinearLayout
@@ -668,6 +665,44 @@
             </LinearLayout>
 
           </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Diet Mode Text -->
+        <LinearLayout
+          android:id="@+id/diet_mode_container"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="12dp"
+          android:layout_marginBottom="16dp"
+          android:gravity="center_vertical"
+          android:orientation="horizontal"
+          android:clickable="true"
+          android:focusable="true"
+          android:background="?android:attr/selectableItemBackground"
+          android:padding="4dp"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/nutrition_progress_section"
+          app:layout_constraintBottom_toBottomOf="parent">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bạn đang ăn theo chế độ: "
+            android:fontFamily="@font/poppins_regular"
+            android:textColor="#9E9E9E"
+            android:textSize="14sp" />
+
+          <TextView
+            android:id="@+id/tv_diet_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tùy Chỉnh"
+            android:textColor="#3B8F3B"
+            android:fontFamily="@font/poppins_bold"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         </LinearLayout>
 
