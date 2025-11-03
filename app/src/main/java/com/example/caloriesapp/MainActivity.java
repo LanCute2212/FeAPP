@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void navigateToHomePage() {
-        Intent intent = new Intent(MainActivity.this, HomePageActivity.class);
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
     }

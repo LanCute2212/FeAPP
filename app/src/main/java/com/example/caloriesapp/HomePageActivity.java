@@ -1,5 +1,6 @@
 package com.example.caloriesapp;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
@@ -27,8 +28,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.example.caloriesapp.adapter.ActivityAdapter;
 import com.example.caloriesapp.apiclient.ApiClient;
 import com.example.caloriesapp.apiclient.UserClient;
+import com.example.caloriesapp.apiclient.DietClient;
 import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.dto.response.PhysicalProfileForm;
+import com.example.caloriesapp.dto.response.DietResponse;
 import com.example.caloriesapp.model.ActivityItem;
 import com.example.caloriesapp.session.SessionManager;
 
@@ -61,6 +64,9 @@ public class HomePageActivity extends AppCompatActivity {
   private double targetWeight = -1;
   private int selectedAdjustmentLevel = 500;
   private boolean isWeightLoss = true;
+  private int selectedCarbPercent = 50;
+  private int selectedProteinPercent = 23;
+  private int selectedFatPercent = 27;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +173,10 @@ public class HomePageActivity extends AppCompatActivity {
     }
     
     loadUserPhysicalProfile();
+  }
+  
+  private double roundToTwoDecimals(double value) {
+    return Math.round(value * 100.0) / 100.0;
   }
 
   @Override
@@ -531,19 +541,16 @@ public class HomePageActivity extends AppCompatActivity {
   }
   
   private void updateNutritionProgress() {
-    // Hardcoded values for demonstration - replace with actual meal data
     double carbsConsumed = 0;
     double proteinConsumed = 0;
     double fatConsumed = 0;
     double fiberConsumed = 0;
     
-    // Target values (these would come from user's profile)
-    double carbsTarget = 442;
-    double proteinTarget = 203;
-    double fatTarget = 106;
+    double carbsTarget = roundToTwoDecimals(((tdee * selectedCarbPercent) / 100.0) / 4.0);
+    double proteinTarget = roundToTwoDecimals(((tdee * selectedProteinPercent) / 100.0) / 4.0);
+    double fatTarget = roundToTwoDecimals(((tdee * selectedFatPercent) / 100.0) / 9.0);
     double fiberTarget = 49;
     
-    // Update TextViews
     if (tvCarbsProgress != null) {
       tvCarbsProgress.setText(String.format("%.0f/%.0fg", carbsConsumed, carbsTarget));
     }
@@ -557,7 +564,6 @@ public class HomePageActivity extends AppCompatActivity {
       tvFiberProgress.setText(String.format("%.0f/%.0fg", fiberConsumed, fiberTarget));
     }
     
-    // Update ProgressBars (percentage)
     if (progressCarbs != null && carbsTarget > 0) {
       int carbsPercent = (int)((carbsConsumed / carbsTarget) * 100);
       progressCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
@@ -584,16 +590,13 @@ public class HomePageActivity extends AppCompatActivity {
     View bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_diet_mode, null);
     bottomSheetDialog.setContentView(bottomSheetView);
     
-    // Close button
     ImageView btnClose = bottomSheetView.findViewById(R.id.btn_close);
     btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
     
-    // Number pickers
     NumberPicker npCarbs = bottomSheetView.findViewById(R.id.np_carbs);
     NumberPicker npProtein = bottomSheetView.findViewById(R.id.np_protein);
     NumberPicker npFat = bottomSheetView.findViewById(R.id.np_fat);
     
-    // Set min/max values and initial values (default: 50% carbs, 23% protein, 27% fat)
     npCarbs.setMinValue(0);
     npCarbs.setMaxValue(100);
     npCarbs.setValue(50);
@@ -606,57 +609,95 @@ public class HomePageActivity extends AppCompatActivity {
     npFat.setMaxValue(100);
     npFat.setValue(27);
     
-    // Improve NumberPicker appearance
-    setNumberPickerTextColor(npCarbs, 0xFF4CAF50);
-    setNumberPickerTextColor(npProtein, 0xFFF44336);
-    setNumberPickerTextColor(npFat, 0xFFFF9800);
+    styleNumberPicker(npCarbs, 0xFF4CAF50, 22f);
+    styleNumberPicker(npProtein, 0xFF4CAF50, 22f);
+    styleNumberPicker(npFat, 0xFF4CAF50, 22f);
     
-    // Total percentage display
     TextView tvTotalPercentage = bottomSheetView.findViewById(R.id.tv_total_percentage);
     CardView cardTotalPercentage = bottomSheetView.findViewById(R.id.card_total_percentage);
     updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
     
-    // NumberPicker change listeners
+    final boolean[] isUpdatingFromDiet = {false};
+    final DietModeAdapter[] adapterRef = new DietModeAdapter[1];
     NumberPicker.OnValueChangeListener valueChangeListener = (picker, oldVal, newVal) -> {
       updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
+      if (!isUpdatingFromDiet[0] && adapterRef[0] != null) {
+        adapterRef[0].selectCustom();
+      }
     };
     
     npCarbs.setOnValueChangedListener(valueChangeListener);
     npProtein.setOnValueChangedListener(valueChangeListener);
     npFat.setOnValueChangedListener(valueChangeListener);
     
-    // Diet mode buttons
     RecyclerView rvDietModes = bottomSheetView.findViewById(R.id.rv_diet_modes);
-    String[] dietModes = {"Cân Bằng", "Low Carb", "High Protein", "Keto", "Atkins", "Paleo", "Địa Trung Hải", "DASH", "Tùy Chỉnh"};
-    DietModeAdapter dietModeAdapter = new DietModeAdapter(dietModes, 0); // 0 = Cân Bằng selected by default
     GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
     gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
       @Override
       public int getSpanSize(int position) {
-        return 1; // Each item spans 1 column
+        return 1;
       }
     });
     rvDietModes.setLayoutManager(gridLayoutManager);
-    // Add spacing between items
     int spacing = (int) (8 * getResources().getDisplayMetrics().density);
     rvDietModes.addItemDecoration(new GridSpacingItemDecoration(3, spacing, true));
+    DietModeAdapter dietModeAdapter = new DietModeAdapter(new java.util.ArrayList<>(), -1, selected -> {
+      if (selected != null) {
+        isUpdatingFromDiet[0] = true;
+        npCarbs.setValue(selected.getCarbPercent());
+        npProtein.setValue(selected.getProteinPercent());
+        npFat.setValue(selected.getFatPercent());
+        updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
+        isUpdatingFromDiet[0] = false;
+      }
+    });
+    adapterRef[0] = dietModeAdapter;
     rvDietModes.setAdapter(dietModeAdapter);
+
+    DietClient dietClient = ApiClient.getClient().create(DietClient.class);
+    dietClient.getDiets().enqueue(new Callback<BaseResponse<java.util.List<DietResponse>>>() {
+      @Override
+      public void onResponse(Call<BaseResponse<java.util.List<DietResponse>>> call, Response<BaseResponse<java.util.List<DietResponse>>> response) {
+        if (response.isSuccessful() && response.body() != null && !response.body().isError()) {
+          java.util.List<DietResponse> diets = response.body().getData();
+          if (diets == null) {
+            diets = new java.util.ArrayList<>();
+          }
+          DietResponse custom = new DietResponse("Tùy chỉnh", npCarbs.getValue(), npFat.getValue(), npProtein.getValue());
+          java.util.List<DietResponse> withCustom = new java.util.ArrayList<>();
+          withCustom.add(custom);
+          withCustom.addAll(diets);
+          dietModeAdapter.setItems(withCustom);
+        }
+      }
+
+      @Override
+      public void onFailure(Call<BaseResponse<java.util.List<DietResponse>>> call, Throwable t) {
+      }
+    });
     
-    // Save button
     Button btnSave = bottomSheetView.findViewById(R.id.btn_save_diet_mode);
     btnSave.setOnClickListener(v -> {
       int selectedIndex = dietModeAdapter.getSelectedPosition();
-      String selectedDietMode = dietModes[selectedIndex];
-      
-      // Update the diet mode text in the main view
+      String nameToSave = "Tùy chỉnh";
+      if (selectedIndex >= 0) {
+        DietResponse selectedDiet = dietModeAdapter.getItem(selectedIndex);
+        if (selectedDiet != null &&
+            selectedDiet.getCarbPercent() == npCarbs.getValue() &&
+            selectedDiet.getProteinPercent() == npProtein.getValue() &&
+            selectedDiet.getFatPercent() == npFat.getValue()) {
+          nameToSave = selectedDiet.getName();
+        }
+      }
       TextView tvDietMode = findViewById(R.id.tv_diet_mode);
       if (tvDietMode != null) {
-        tvDietMode.setText(selectedDietMode);
+        tvDietMode.setText(nameToSave);
       }
-      
-      // TODO: Save the percentages and diet mode to SharedPreferences or API
-      
-      Toast.makeText(this, "Đã lưu chế độ ăn: " + selectedDietMode, Toast.LENGTH_SHORT).show();
+      selectedCarbPercent = npCarbs.getValue();
+      selectedProteinPercent = npProtein.getValue();
+      selectedFatPercent = npFat.getValue();
+      updateNutritionProgress();
+      Toast.makeText(this, "Đã lưu chế độ ăn: " + nameToSave, Toast.LENGTH_SHORT).show();
       bottomSheetDialog.dismiss();
     });
     
@@ -669,27 +710,41 @@ public class HomePageActivity extends AppCompatActivity {
     if (total == 100) {
       tvTotal.setTextColor(0xFF4CAF50);
       if (cardView != null) {
-        cardView.setCardBackgroundColor(0xFFE8F5E9); // Light green
+        cardView.setCardBackgroundColor(0xFFE8F5E9);
       }
     } else {
       tvTotal.setTextColor(0xFFF44336);
       if (cardView != null) {
-        cardView.setCardBackgroundColor(0xFFFFEBEE); // Light red
+        cardView.setCardBackgroundColor(0xFFFFEBEE);
       }
     }
   }
   
-  private void setNumberPickerTextColor(NumberPicker numberPicker, int color) {
+  private void styleNumberPicker(NumberPicker numberPicker, int centerColor, float textSizeSp) {
     try {
-      int count = numberPicker.getChildCount();
-      for (int i = 0; i < count; i++) {
-        View child = numberPicker.getChildAt(i);
-        if (child instanceof TextView) {
-          ((TextView) child).setTextColor(color);
-        }
+      @SuppressLint("SoonBlockedPrivateApi") java.lang.reflect.Field selectorWheelPaintField = NumberPicker.class.getDeclaredField("mSelectorWheelPaint");
+      selectorWheelPaintField.setAccessible(true);
+      Paint selectorWheelPaint = (Paint) selectorWheelPaintField.get(numberPicker);
+      selectorWheelPaint.setColor(centerColor);
+      selectorWheelPaint.setTextSize(textSizeSp * getResources().getDisplayMetrics().scaledDensity);
+
+      java.lang.reflect.Field inputTextField = NumberPicker.class.getDeclaredField("mInputText");
+      inputTextField.setAccessible(true);
+      TextView inputText = (TextView) inputTextField.get(numberPicker);
+      inputText.setTextColor(centerColor);
+      inputText.setTextSize(textSizeSp);
+
+      numberPicker.invalidate();
+    } catch (Exception ignored) {
+    }
+
+    int childCount = numberPicker.getChildCount();
+    for (int i = 0; i < childCount; i++) {
+      View child = numberPicker.getChildAt(i);
+      if (child instanceof TextView) {
+        ((TextView) child).setTextColor(centerColor);
+        ((TextView) child).setTextSize(textSizeSp);
       }
-    } catch (Exception e) {
-      // Ignore if reflection fails
     }
   }
   
@@ -704,7 +759,6 @@ public class HomePageActivity extends AppCompatActivity {
     updateCalorieStats();
   }
   
-  // ItemDecoration for grid spacing
   private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
     private int spanCount;
     private int spacing;
@@ -740,14 +794,18 @@ public class HomePageActivity extends AppCompatActivity {
     }
   }
   
-  // Simple adapter for diet mode buttons
   private static class DietModeAdapter extends RecyclerView.Adapter<DietModeAdapter.DietModeViewHolder> {
-    private String[] dietModes;
+    interface OnDietSelectedListener {
+      void onDietSelected(DietResponse selectedDiet);
+    }
+    private java.util.List<DietResponse> dietModes;
     private int selectedPosition;
+    private OnDietSelectedListener onDietSelectedListener;
     
-    DietModeAdapter(String[] dietModes, int selectedPosition) {
+    DietModeAdapter(java.util.List<DietResponse> dietModes, int selectedPosition, OnDietSelectedListener listener) {
       this.dietModes = dietModes;
       this.selectedPosition = selectedPosition;
+      this.onDietSelectedListener = listener;
     }
     
     @NonNull
@@ -759,7 +817,7 @@ public class HomePageActivity extends AppCompatActivity {
     
     @Override
     public void onBindViewHolder(@NonNull DietModeViewHolder holder, int position) {
-      holder.button.setText(dietModes[position]);
+      holder.button.setText(dietModes.get(position).getName());
       boolean isSelected = position == selectedPosition;
       
       if (isSelected) {
@@ -777,16 +835,44 @@ public class HomePageActivity extends AppCompatActivity {
         selectedPosition = position;
         notifyItemChanged(oldPosition);
         notifyItemChanged(selectedPosition);
+        if (onDietSelectedListener != null) {
+          onDietSelectedListener.onDietSelected(dietModes.get(position));
+        }
       });
     }
     
     @Override
     public int getItemCount() {
-      return dietModes.length;
+      return dietModes.size();
     }
     
     int getSelectedPosition() {
       return selectedPosition;
+    }
+    
+    DietResponse getItem(int position) {
+      if (position < 0 || position >= dietModes.size()) {
+        return null;
+      }
+      return dietModes.get(position);
+    }
+    
+    void setItems(java.util.List<DietResponse> newItems) {
+      dietModes.clear();
+      dietModes.addAll(newItems);
+      notifyDataSetChanged();
+    }
+    
+    void selectCustom() {
+      if (dietModes.isEmpty()) {
+        return;
+      }
+      int old = selectedPosition;
+      selectedPosition = 0;
+      if (old != -1) {
+        notifyItemChanged(old);
+      }
+      notifyItemChanged(selectedPosition);
     }
     
     static class DietModeViewHolder extends RecyclerView.ViewHolder {
