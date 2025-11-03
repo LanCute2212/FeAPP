@@ -244,7 +244,6 @@ public class PhysicalProfileActivity extends AppCompatActivity {
                 saveAdjustmentLevel();
                 updateTargetAndAdjustment();
                 dialog.dismiss();
-                
                 Toast.makeText(this, "Đã lưu mức độ điều chỉnh", Toast.LENGTH_SHORT).show();
             }
         });
