@@ -14,9 +14,12 @@ import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Typeface;
+import android.graphics.Color;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import android.widget.ViewFlipper;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -173,6 +176,37 @@ public class HomePageActivity extends AppCompatActivity {
     }
     
     loadUserPhysicalProfile();
+  
+  // Toggle Day/Week inside the same card using ViewFlipper
+  TextView btnDay = findViewById(R.id.btn_theo_ngay);
+  TextView btnWeek = findViewById(R.id.btn_theo_tuan);
+  ViewFlipper flipper = findViewById(R.id.nutrition_flipper);
+  if (flipper != null && btnDay != null && btnWeek != null) {
+    // simple slide animations
+    flipper.setInAnimation(this, android.R.anim.slide_in_left);
+    flipper.setOutAnimation(this, android.R.anim.slide_out_right);
+
+    View.OnClickListener dayListener = v -> {
+      if (flipper.getDisplayedChild() != 0) {
+        flipper.setDisplayedChild(0);
+      }
+      styleToggleSelected(btnDay, true);
+      styleToggleSelected(btnWeek, false);
+    };
+
+    View.OnClickListener weekListener = v -> {
+      if (flipper.getDisplayedChild() != 1) {
+        flipper.setDisplayedChild(1);
+      }
+      styleToggleSelected(btnDay, false);
+      styleToggleSelected(btnWeek, true);
+    };
+
+    btnDay.setOnClickListener(dayListener);
+    btnWeek.setOnClickListener(weekListener);
+    // default select Day
+    dayListener.onClick(btnDay);
+  }
   }
   
   private double roundToTwoDecimals(double value) {
@@ -720,6 +754,20 @@ public class HomePageActivity extends AppCompatActivity {
     }
   }
   
+  private void styleToggleSelected(TextView textView, boolean selected) {
+    if (textView == null) return;
+    textView.setTypeface(null, selected ? Typeface.BOLD : Typeface.NORMAL);
+    textView.setTextColor(selected ? Color.parseColor("#111111") : Color.parseColor("#9E9E9E"));
+    if (selected) {
+      textView.setBackgroundResource(R.drawable.btn_outline_green);
+    } else {
+      textView.setBackground(null);
+    }
+    int hPad = (int)(12 * getResources().getDisplayMetrics().density);
+    int vPad = (int)(6 * getResources().getDisplayMetrics().density);
+    textView.setPadding(hPad, vPad, hPad, vPad);
+  }
+
   private void styleNumberPicker(NumberPicker numberPicker, int centerColor, float textSizeSp) {
     try {
       @SuppressLint("SoonBlockedPrivateApi") java.lang.reflect.Field selectorWheelPaintField = NumberPicker.class.getDeclaredField("mSelectorWheelPaint");
