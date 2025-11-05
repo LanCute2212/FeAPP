@@ -33,7 +33,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ListActivity extends AppCompatActivity {
     private ActivityAdapter activityAdapter;
-    private static final String BASE_URL = "http://10.24.6.35:8081/";
+    private static final String BASE_URL = "http://10.24.12.108:8081/";
 
     private SessionManager sessionManager;
 
