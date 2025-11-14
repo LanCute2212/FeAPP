@@ -17,6 +17,7 @@
     app:indicatorColor="#FF8A00"
     app:trackColor="#E0E0E0"
     app:trackThickness="5dp"
+    app:indicatorTrackGapSize="0dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"

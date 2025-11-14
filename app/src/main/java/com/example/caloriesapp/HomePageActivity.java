@@ -57,6 +57,9 @@ public class HomePageActivity extends AppCompatActivity {
   private static final int DAYS_IN_WEEK = 7;
   private static final int MAX_PROGRESS_PERCENT = 100;
   private static final int MIN_PROGRESS_PERCENT = 0;
+  private static final boolean USE_HARD_CODED_WEEK_DATA = true;
+  private static final double HARD_CODED_WEEKLY_TARGET = 14000.0;
+  private static final double HARD_CODED_WEEKLY_CONSUMED = 5000.0;
   
   private String email;
   private ActivityAdapter activityAdapter;
@@ -207,6 +210,10 @@ public class HomePageActivity extends AppCompatActivity {
     btnDay.setOnClickListener(dayListener);
     btnWeek.setOnClickListener(weekListener);
     dayListener.onClick(btnDay);
+  }
+  
+  if (USE_HARD_CODED_WEEK_DATA) {
+    updateWeeklyCaloriesCircle(0, 0);
   }
   }
   
@@ -527,7 +534,7 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
     
-    double consumedCalories = 1200; // TODO: Replace with actual meal data
+    double consumedCalories = 1200;
     
     double burnedCalories = 0;
     if (activityList != null) {
@@ -566,6 +573,11 @@ public class HomePageActivity extends AppCompatActivity {
   }
   
   private void updateWeeklyCaloriesCircle(double dailyIntake, double dailyConsumed) {
+    if (USE_HARD_CODED_WEEK_DATA) {
+      updateWeeklyCaloriesTextViews(HARD_CODED_WEEKLY_CONSUMED, HARD_CODED_WEEKLY_TARGET);
+      updateWeeklyCaloriesProgress(HARD_CODED_WEEKLY_CONSUMED, HARD_CODED_WEEKLY_TARGET);
+      return;
+    }
     if (tdee == 0) {
       return;
     }
@@ -829,6 +841,10 @@ public class HomePageActivity extends AppCompatActivity {
     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
     targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
     selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
+    
+    if (USE_HARD_CODED_WEEK_DATA) {
+      updateWeeklyCaloriesCircle(0, 0);
+    }
     
     updateCalorieStats();
   }
