@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -727,12 +728,14 @@ public class HomePageActivity extends AppCompatActivity {
       Paint selectorWheelPaint = (Paint) selectorWheelPaintField.get(numberPicker);
       selectorWheelPaint.setColor(centerColor);
       selectorWheelPaint.setTextSize(textSizeSp * getResources().getDisplayMetrics().scaledDensity);
+      selectorWheelPaint.setFakeBoldText(false);
 
       java.lang.reflect.Field inputTextField = NumberPicker.class.getDeclaredField("mInputText");
       inputTextField.setAccessible(true);
       TextView inputText = (TextView) inputTextField.get(numberPicker);
       inputText.setTextColor(centerColor);
       inputText.setTextSize(textSizeSp);
+      inputText.setTypeface(Typeface.DEFAULT_BOLD);
 
       numberPicker.invalidate();
     } catch (Exception ignored) {
