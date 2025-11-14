@@ -71,6 +71,8 @@ public class HomePageActivity extends AppCompatActivity {
   private ImageView appleImg;
   private CircularProgressIndicator weekCalorieProgress;
   private TextView weekCaloriesConsumed, weekCaloriesTarget;
+  private TextView tvWeekCarbsProgress, tvWeekProteinProgress, tvWeekFatProgress;
+  private ProgressBar progressWeekCarbs, progressWeekProtein, progressWeekFat;
   
   private double tdee = 0;
   private double targetWeight = -1;
@@ -114,6 +116,14 @@ public class HomePageActivity extends AppCompatActivity {
     weekCalorieProgress = findViewById(R.id.week_calorie_progress);
     weekCaloriesConsumed = findViewById(R.id.week_calories_consumed);
     weekCaloriesTarget = findViewById(R.id.week_calories_target);
+    
+    // Weekly nutrition progress bars and text views
+    tvWeekCarbsProgress = findViewById(R.id.tv_week_carbs_progress);
+    tvWeekProteinProgress = findViewById(R.id.tv_week_protein_progress);
+    tvWeekFatProgress = findViewById(R.id.tv_week_fat_progress);
+    progressWeekCarbs = findViewById(R.id.progress_week_carbs);
+    progressWeekProtein = findViewById(R.id.progress_week_protein);
+    progressWeekFat = findViewById(R.id.progress_week_fat);
 
     findViewById(R.id.icon_bell).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
@@ -570,6 +580,7 @@ public class HomePageActivity extends AppCompatActivity {
     updateNutritionProgress();
     
     updateWeeklyCaloriesCircle(intake, consumedCalories);
+    updateWeeklyNutritionProgress();
   }
   
   private void updateWeeklyCaloriesCircle(double dailyIntake, double dailyConsumed) {
@@ -610,15 +621,31 @@ public class HomePageActivity extends AppCompatActivity {
     return Math.min(MAX_PROGRESS_PERCENT, Math.max(MIN_PROGRESS_PERCENT, progressPercent));
   }
   
+  /**
+   * Calculates the daily nutrition targets based on TDEE and selected percentages.
+   * These are the values displayed in the "By Day" section.
+   */
+  private double[] calculateDailyNutritionTargets() {
+    if (tdee == 0) {
+      return new double[]{0, 0, 0};
+    }
+    double carbsTarget = roundToTwoDecimals(((tdee * selectedCarbPercent) / 100.0) / 4.0);
+    double proteinTarget = roundToTwoDecimals(((tdee * selectedProteinPercent) / 100.0) / 4.0);
+    double fatTarget = roundToTwoDecimals(((tdee * selectedFatPercent) / 100.0) / 9.0);
+    return new double[]{carbsTarget, proteinTarget, fatTarget};
+  }
+  
   private void updateNutritionProgress() {
     double carbsConsumed = 0;
     double proteinConsumed = 0;
     double fatConsumed = 0;
     double fiberConsumed = 0;
     
-    double carbsTarget = roundToTwoDecimals(((tdee * selectedCarbPercent) / 100.0) / 4.0);
-    double proteinTarget = roundToTwoDecimals(((tdee * selectedProteinPercent) / 100.0) / 4.0);
-    double fatTarget = roundToTwoDecimals(((tdee * selectedFatPercent) / 100.0) / 9.0);
+    // Get daily targets (same values shown in "By Day" section)
+    double[] dailyTargets = calculateDailyNutritionTargets();
+    double carbsTarget = dailyTargets[0];
+    double proteinTarget = dailyTargets[1];
+    double fatTarget = dailyTargets[2];
     double fiberTarget = 49;
     
     if (tvCarbsProgress != null) {
@@ -652,6 +679,56 @@ public class HomePageActivity extends AppCompatActivity {
     if (progressFiber != null && fiberTarget > 0) {
       int fiberPercent = (int)((fiberConsumed / fiberTarget) * 100);
       progressFiber.setProgress(Math.min(100, Math.max(0, fiberPercent)));
+    }
+  }
+  
+  private void updateWeeklyNutritionProgress() {
+    if (tdee == 0) {
+      return;
+    }
+    
+    // Get the exact same daily targets that are displayed in "By Day" section
+    double[] dailyTargets = calculateDailyNutritionTargets();
+    double dailyCarbsTarget = dailyTargets[0];
+    double dailyProteinTarget = dailyTargets[1];
+    double dailyFatTarget = dailyTargets[2];
+    
+    // Calculate weekly targets by multiplying daily targets by 7
+    // This ensures weekly values are exactly 7 times the daily values shown in "By Day" section
+    double weeklyCarbsTarget = dailyCarbsTarget * DAYS_IN_WEEK;
+    double weeklyProteinTarget = dailyProteinTarget * DAYS_IN_WEEK;
+    double weeklyFatTarget = dailyFatTarget * DAYS_IN_WEEK;
+    
+    // For now, consumed values are 0 (can be updated later with actual weekly data)
+    double weeklyCarbsConsumed = 0;
+    double weeklyProteinConsumed = 0;
+    double weeklyFatConsumed = 0;
+    
+    // Update TextViews
+    if (tvWeekCarbsProgress != null) {
+      tvWeekCarbsProgress.setText(String.format("%.0f/%.0fg", weeklyCarbsConsumed, weeklyCarbsTarget));
+    }
+    if (tvWeekProteinProgress != null) {
+      tvWeekProteinProgress.setText(String.format("%.0f/%.0fg", weeklyProteinConsumed, weeklyProteinTarget));
+    }
+    if (tvWeekFatProgress != null) {
+      tvWeekFatProgress.setText(String.format("%.0f/%.0fg", weeklyFatConsumed, weeklyFatTarget));
+    }
+    
+    // Update ProgressBars
+    if (progressWeekCarbs != null && weeklyCarbsTarget > 0) {
+      int carbsPercent = (int)((weeklyCarbsConsumed / weeklyCarbsTarget) * 100);
+      progressWeekCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
+    }
+    
+    if (progressWeekProtein != null && weeklyProteinTarget > 0) {
+      int proteinPercent = (int)((weeklyProteinConsumed / weeklyProteinTarget) * 100);
+      progressWeekProtein.setProgress(Math.min(100, Math.max(0, proteinPercent)));
+    }
+    
+    if (progressWeekFat != null && weeklyFatTarget > 0) {
+      int fatPercent = (int)((weeklyFatConsumed / weeklyFatTarget) * 100);
+      progressWeekFat.setProgress(Math.min(100, Math.max(0, fatPercent)));
     }
   }
   
@@ -767,6 +844,7 @@ public class HomePageActivity extends AppCompatActivity {
       selectedProteinPercent = npProtein.getValue();
       selectedFatPercent = npFat.getValue();
       updateNutritionProgress();
+      updateWeeklyNutritionProgress();
       Toast.makeText(this, "Đã lưu chế độ ăn: " + nameToSave, Toast.LENGTH_SHORT).show();
       bottomSheetDialog.dismiss();
     });
