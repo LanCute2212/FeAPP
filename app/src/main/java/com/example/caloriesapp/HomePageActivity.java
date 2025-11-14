@@ -15,9 +15,12 @@ import android.widget.NumberPicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Typeface;
+import android.graphics.Color;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import android.widget.ViewFlipper;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -25,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import com.example.caloriesapp.adapter.ActivityAdapter;
 import com.example.caloriesapp.apiclient.ApiClient;
@@ -45,12 +49,14 @@ import java.util.Calendar;
 import java.util.List;
 
 public class HomePageActivity extends AppCompatActivity {
-
   private static final int ADD_ACTIVITY_REQUEST_CODE = 1001;
   private static final int LIST_ACTIVITY_REQUEST_CODE = 1002;
   private static final String PREFS_NAME = "PhysicalProfile";
   private static final String KEY_TARGET_WEIGHT = "target_weight";
   private static final String KEY_ADJUSTMENT_LEVEL = "adjustment_level";
+  private static final int DAYS_IN_WEEK = 7;
+  private static final int MAX_PROGRESS_PERCENT = 100;
+  private static final int MIN_PROGRESS_PERCENT = 0;
   
   private String email;
   private ActivityAdapter activityAdapter;
@@ -60,6 +66,8 @@ public class HomePageActivity extends AppCompatActivity {
   private TextView tvCarbsProgress, tvProteinProgress, tvFatProgress, tvFiberProgress;
   private ProgressBar progressCarbs, progressProtein, progressFat, progressFiber;
   private ImageView appleImg;
+  private CircularProgressIndicator weekCalorieProgress;
+  private TextView weekCaloriesConsumed, weekCaloriesTarget;
   
   private double tdee = 0;
   private double targetWeight = -1;
@@ -90,17 +98,19 @@ public class HomePageActivity extends AppCompatActivity {
     tvDaNap = findViewById(R.id.da_nap);
     appleImg = findViewById(R.id.apple_img);
     
-    // Nutrition progress bars
     progressCarbs = findViewById(R.id.progress_carbs);
     progressProtein = findViewById(R.id.progress_protein);
     progressFat = findViewById(R.id.progress_fat);
     progressFiber = findViewById(R.id.progress_fiber);
     
-    // Nutrition progress TextViews
     tvCarbsProgress = findViewById(R.id.tv_carbs_progress);
     tvProteinProgress = findViewById(R.id.tv_protein_progress);
     tvFatProgress = findViewById(R.id.tv_fat_progress);
     tvFiberProgress = findViewById(R.id.tv_fiber_progress);
+    
+    weekCalorieProgress = findViewById(R.id.week_calorie_progress);
+    weekCaloriesConsumed = findViewById(R.id.week_calories_consumed);
+    weekCaloriesTarget = findViewById(R.id.week_calories_target);
 
     findViewById(R.id.icon_bell).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
@@ -125,7 +135,6 @@ public class HomePageActivity extends AppCompatActivity {
 
     setupCollapsibleActivityHeader();
     
-    // Setup add activity button
     View addActivityButton = findViewById(R.id.add_activity);
     if (addActivityButton != null) {
       addActivityButton.setOnClickListener(v -> {
@@ -139,7 +148,6 @@ public class HomePageActivity extends AppCompatActivity {
       startActivity(intent);
     });
 
-    // Add click listeners for meal add buttons
     findViewById(R.id.breakfast_add_button).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
       intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Breakfast");
@@ -161,19 +169,45 @@ public class HomePageActivity extends AppCompatActivity {
     setupActivitiesList();
     populateWeekDates();
     
-    // Setup diet mode click listener
     View dietModeContainer = findViewById(R.id.diet_mode_container);
     if (dietModeContainer != null) {
       dietModeContainer.setOnClickListener(v -> showDietModeBottomSheet());
     }
     
-    // Apply underline to diet mode text
     TextView tvDietMode = findViewById(R.id.tv_diet_mode);
     if (tvDietMode != null) {
       tvDietMode.setPaintFlags(tvDietMode.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
     }
     
     loadUserPhysicalProfile();
+  
+  TextView btnDay = findViewById(R.id.btn_theo_ngay);
+  TextView btnWeek = findViewById(R.id.btn_theo_tuan);
+  ViewFlipper flipper = findViewById(R.id.nutrition_flipper);
+  if (flipper != null && btnDay != null && btnWeek != null) {
+    flipper.setInAnimation(this, android.R.anim.slide_in_left);
+    flipper.setOutAnimation(this, android.R.anim.slide_out_right);
+
+    View.OnClickListener dayListener = v -> {
+      if (flipper.getDisplayedChild() != 0) {
+        flipper.setDisplayedChild(0);
+      }
+      styleToggleSelected(btnDay, true);
+      styleToggleSelected(btnWeek, false);
+    };
+
+    View.OnClickListener weekListener = v -> {
+      if (flipper.getDisplayedChild() != 1) {
+        flipper.setDisplayedChild(1);
+      }
+      styleToggleSelected(btnDay, false);
+      styleToggleSelected(btnWeek, true);
+    };
+
+    btnDay.setOnClickListener(dayListener);
+    btnWeek.setOnClickListener(weekListener);
+    dayListener.onClick(btnDay);
+  }
   }
   
   private double roundToTwoDecimals(double value) {
@@ -218,7 +252,6 @@ public class HomePageActivity extends AppCompatActivity {
             .show();
       }
       
-      // Update summary stats after adding/updating activities
       updateSummaryStats();
     }
   }
@@ -261,7 +294,6 @@ public class HomePageActivity extends AppCompatActivity {
 
     setupSwipeToDelete(recyclerView);
     
-    // Update summary to show empty state if list is empty
     updateSummaryStats();
   }
 
@@ -278,7 +310,6 @@ public class HomePageActivity extends AppCompatActivity {
       public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
         int position = viewHolder.getAdapterPosition();
         activityAdapter.removeActivity(position);
-        // Update summary stats after removing activity
         updateSummaryStats();
       }
     };
@@ -381,7 +412,6 @@ public class HomePageActivity extends AppCompatActivity {
         isExpanded[0] = !isExpanded[0];
         
         if (isExpanded[0]) {
-          // Expand: show activities container and summary
           if (activitiesContainer != null) {
             activitiesContainer.setVisibility(View.VISIBLE);
           }
@@ -391,10 +421,8 @@ public class HomePageActivity extends AppCompatActivity {
           if (summaryStatsLayout != null) {
             summaryStatsLayout.setVisibility(View.VISIBLE);
           }
-          // Update summary stats to show/hide empty state
           updateSummaryStats();
         } else {
-          // Collapse: hide activities container and summary
           if (activitiesContainer != null) {
             activitiesContainer.setVisibility(View.GONE);
           }
@@ -441,7 +469,6 @@ public class HomePageActivity extends AppCompatActivity {
       activitySummaryText.setText(activityCount + " activities");
     }
     
-    // Show/hide empty state message
     if (tvEmptyActivity != null && recyclerView != null) {
       if (activityCount == 0) {
         tvEmptyActivity.setVisibility(View.VISIBLE);
@@ -521,24 +548,54 @@ public class HomePageActivity extends AppCompatActivity {
       tvConsumed.setText(String.valueOf((int)burnedCalories));
     }
     
-    // Update intake display in the apple
     if (tvDaNap != null) {
       tvDaNap.setText("Intake\n" + (int)intake);
     }
     
-    // Calculate and update apple completion percentage
     if (appleImg != null && intake > 0) {
       double completionPercent = consumedCalories / intake;
-      // Clamp between 0 and 1
       completionPercent = Math.max(0.0, Math.min(1.0, completionPercent));
-      // Set alpha: 0 = empty (0% consumed), 1 = full (100% consumed)
       appleImg.setAlpha((float)completionPercent);
     } else if (appleImg != null) {
       appleImg.setAlpha(0.2f);
     }
     
-    // Update nutrition progress bars
     updateNutritionProgress();
+    
+    updateWeeklyCaloriesCircle(intake, consumedCalories);
+  }
+  
+  private void updateWeeklyCaloriesCircle(double dailyIntake, double dailyConsumed) {
+    if (tdee == 0) {
+      return;
+    }
+    double weeklyTarget = dailyIntake * DAYS_IN_WEEK;
+    double weeklyConsumed = dailyConsumed * DAYS_IN_WEEK;
+    updateWeeklyCaloriesTextViews(weeklyConsumed, weeklyTarget);
+    updateWeeklyCaloriesProgress(weeklyConsumed, weeklyTarget);
+  }
+  private void updateWeeklyCaloriesTextViews(double weeklyConsumed, double weeklyTarget) {
+    if (weekCaloriesConsumed != null) {
+      weekCaloriesConsumed.setText(String.valueOf((int)weeklyConsumed));
+    }
+    if (weekCaloriesTarget != null) {
+      weekCaloriesTarget.setText(String.valueOf((int)weeklyTarget));
+    }
+  }
+  private void updateWeeklyCaloriesProgress(double weeklyConsumed, double weeklyTarget) {
+    if (weekCalorieProgress == null) {
+      return;
+    }
+    if (weeklyTarget > 0) {
+      int progressPercent = calculateProgressPercent(weeklyConsumed, weeklyTarget);
+      weekCalorieProgress.setProgress(progressPercent);
+    } else {
+      weekCalorieProgress.setProgress(MIN_PROGRESS_PERCENT);
+    }
+  }
+  private int calculateProgressPercent(double consumed, double target) {
+    int progressPercent = (int)((consumed / target) * MAX_PROGRESS_PERCENT);
+    return Math.min(MAX_PROGRESS_PERCENT, Math.max(MIN_PROGRESS_PERCENT, progressPercent));
   }
   
   private void updateNutritionProgress() {
@@ -721,6 +778,20 @@ public class HomePageActivity extends AppCompatActivity {
     }
   }
   
+  private void styleToggleSelected(TextView textView, boolean selected) {
+    if (textView == null) return;
+    textView.setTypeface(null, selected ? Typeface.BOLD : Typeface.NORMAL);
+    textView.setTextColor(selected ? Color.parseColor("#111111") : Color.parseColor("#9E9E9E"));
+    if (selected) {
+      textView.setBackgroundResource(R.drawable.btn_outline_green);
+    } else {
+      textView.setBackground(null);
+    }
+    int hPad = (int)(12 * getResources().getDisplayMetrics().density);
+    int vPad = (int)(6 * getResources().getDisplayMetrics().density);
+    textView.setPadding(hPad, vPad, hPad, vPad);
+  }
+
   private void styleNumberPicker(NumberPicker numberPicker, int centerColor, float textSizeSp) {
     try {
       @SuppressLint("SoonBlockedPrivateApi") java.lang.reflect.Field selectorWheelPaintField = NumberPicker.class.getDeclaredField("mSelectorWheelPaint");
