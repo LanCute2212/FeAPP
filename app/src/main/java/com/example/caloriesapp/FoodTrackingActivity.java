@@ -3,9 +3,12 @@ package com.example.caloriesapp;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,8 +40,10 @@ public class FoodTrackingActivity extends AppCompatActivity {
   private TextView totalProteinText;
   private TextView totalFatText;
   private AutoCompleteTextView mealTypeDropdown;
+  private EditText searchInput;
   private String currentMealType;
   private int currentTabIndex = 0;
+  private String currentSearchQuery = "";
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +74,10 @@ public class FoodTrackingActivity extends AppCompatActivity {
     totalProteinText = findViewById(R.id.total_protein);
     totalFatText = findViewById(R.id.total_fat);
     mealTypeDropdown = findViewById(R.id.meal_type);
+    searchInput = findViewById(R.id.search_input);
 
     setupMealTypeDropdown();
+    setupSearchFunctionality();
   }
 
   private void setupMealTypeDropdown() {
@@ -99,6 +106,28 @@ public class FoodTrackingActivity extends AppCompatActivity {
       currentMealType = selectedValue;
       mealTypeDropdown.setText(selectedDisplayName, false);
       updateNutritionSummary();
+    });
+  }
+
+  private void setupSearchFunctionality() {
+    if (searchInput == null) {
+      return;
+    }
+
+    searchInput.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+      }
+
+      @Override
+      public void onTextChanged(CharSequence s, int start, int before, int count) {
+        currentSearchQuery = s.toString().toLowerCase().trim();
+        updateDisplayedFoodList();
+      }
+
+      @Override
+      public void afterTextChanged(Editable s) {
+      }
     });
   }
 
@@ -138,20 +167,33 @@ public class FoodTrackingActivity extends AppCompatActivity {
   
   private void updateDisplayedFoodList() {
     displayedFoodList.clear();
+    List<FoodItem> sourceList;
+    
     switch (currentTabIndex) {
       case 0:
-        displayedFoodList.addAll(recentFoodList);
+        sourceList = recentFoodList;
         break;
       case 1:
-        displayedFoodList.addAll(favoritesFoodList);
+        sourceList = favoritesFoodList;
         break;
       case 2:
-        displayedFoodList.addAll(myFoodsList);
+        sourceList = myFoodsList;
         break;
       default:
-        displayedFoodList.addAll(allFoodList);
+        sourceList = allFoodList;
         break;
     }
+
+    if (currentSearchQuery.isEmpty()) {
+      displayedFoodList.addAll(sourceList);
+    } else {
+      for (FoodItem food : sourceList) {
+        if (food.getName().toLowerCase().contains(currentSearchQuery)) {
+          displayedFoodList.add(food);
+        }
+      }
+    }
+    
     foodAdapter.notifyDataSetChanged();
   }
 
@@ -163,9 +205,6 @@ public class FoodTrackingActivity extends AppCompatActivity {
       startActivity(intent);
     });
 
-    findViewById(R.id.search_container).setOnClickListener(v -> {
-      // Handle search functionality
-    });
 
     findViewById(R.id.scanner_button).setOnClickListener(v -> {
       // Handle barcode scanner functionality

@@ -192,31 +192,37 @@
 
     </LinearLayout>
 
-    <!-- Navigation Tabs -->
+    <!-- Search Container -->
     <androidx.constraintlayout.widget.ConstraintLayout
       android:id="@+id/search_container"
-      android:layout_width="wrap_content"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginTop="4dp"
-      android:layout_marginHorizontal="16dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginEnd="16dp"
       android:padding="12dp"
       android:background="@drawable/edittext_background"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.061"
+      app:layout_constraintEnd_toStartOf="@id/microphone_button"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/header">
 
-        <TextView
-          android:id="@+id/search_hint"
-          android:layout_width="250sp"
+        <EditText
+          android:id="@+id/search_input"
+          android:layout_width="0dp"
           android:layout_height="wrap_content"
           android:fontFamily="@font/poppins_medium"
-          android:text="Tìm kiếm thực phẩm"
-          android:textColor="#9E9E9E"
+          android:hint="Tìm kiếm thực phẩm"
+          android:textColor="#333333"
+          android:textColorHint="#9E9E9E"
           android:textSize="16sp"
+          android:background="@android:color/transparent"
+          android:inputType="text"
+          android:imeOptions="actionSearch"
+          android:singleLine="true"
           app:layout_constraintBottom_toBottomOf="parent"
           app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
+          app:layout_constraintTop_toTopOf="parent"
+          app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
     <LinearLayout
@@ -464,24 +470,24 @@
 
     <ImageView
       android:id="@+id/microphone_button"
-      android:layout_width="80px"
-      android:layout_height="80px"
-      android:layout_marginTop="12dp"
+      android:layout_width="24dp"
+      android:layout_height="24dp"
+      android:layout_marginStart="8dp"
       android:src="@drawable/dildo"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.178"
-      app:layout_constraintStart_toEndOf="@+id/search_container"
-      app:layout_constraintTop_toBottomOf="@+id/header" />
+      app:layout_constraintStart_toEndOf="@id/search_container"
+      app:layout_constraintTop_toTopOf="@id/search_container"
+      app:layout_constraintBottom_toBottomOf="@id/search_container" />
     <ImageView
       android:id="@+id/scanner_button"
-      android:layout_width="80px"
-      android:layout_height="80px"
-      android:layout_marginTop="12dp"
-      android:layout_marginEnd="28dp"
+      android:layout_width="24dp"
+      android:layout_height="24dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginEnd="16dp"
       android:src="@drawable/scanner"
+      app:layout_constraintStart_toEndOf="@id/microphone_button"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintLeft_toRightOf="@id/microphone_button"
-      app:layout_constraintTop_toBottomOf="@+id/header" />
+      app:layout_constraintTop_toTopOf="@id/search_container"
+      app:layout_constraintBottom_toBottomOf="@id/search_container" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
