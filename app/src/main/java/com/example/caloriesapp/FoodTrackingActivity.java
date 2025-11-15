@@ -57,6 +57,12 @@ public class FoodTrackingActivity extends AppCompatActivity {
     updateNutritionSummary();
   }
 
+  @Override
+  protected void onResume() {
+    super.onResume();
+    updateNutritionSummary();
+  }
+
   private void initializeViews() {
     totalCaloriesText = findViewById(R.id.total_calories);
     totalCarbsText = findViewById(R.id.total_carbs);
@@ -261,6 +267,21 @@ public class FoodTrackingActivity extends AppCompatActivity {
     // Save to data manager
     MealDataManager.getInstance().addMealDetail(mealDetail);
 
+    // Add to recent foods list
+    boolean exists = false;
+    for (FoodItem item : recentFoodList) {
+      if (item.getName().equals(food.getName())) {
+        exists = true;
+        break;
+      }
+    }
+    if (!exists) {
+      recentFoodList.add(0, food);
+      if (currentTabIndex == 0) {
+        updateDisplayedFoodList();
+      }
+    }
+
     // Update nutrition summary
     updateNutritionSummary();
 
@@ -302,25 +323,79 @@ public class FoodTrackingActivity extends AppCompatActivity {
         currentMealType = mealType;
         mealTypeDropdown.setText(getMealTypeDisplayName(mealType), false);
       }
+      
+      double calories = data.getDoubleExtra("calories", 0);
+      double carbs = data.getDoubleExtra("carbs", 0);
+      double protein = data.getDoubleExtra("protein", 0);
+      double fat = data.getDoubleExtra("fat", 0);
+      
+      String currentDate = MealDataManager.getInstance().getCurrentDate();
+      List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
+      
+      if (!todayMeals.isEmpty()) {
+        MealDetail lastMeal = todayMeals.get(todayMeals.size() - 1);
+        FoodItem foodItem = new FoodItem(
+            lastMeal.getFoodName(),
+            lastMeal.getServingSize(),
+            lastMeal.getCalories(),
+            lastMeal.getIconResource(),
+            lastMeal.getProtein(),
+            lastMeal.getCarbs(),
+            lastMeal.getFat()
+        );
+        
+        boolean exists = false;
+        for (FoodItem item : recentFoodList) {
+          if (item.getName().equals(foodItem.getName())) {
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          recentFoodList.add(0, foodItem);
+          if (currentTabIndex == 0) {
+            updateDisplayedFoodList();
+          }
+        }
+      }
+      
       updateNutritionSummary();
     }
   }
 
   private void updateNutritionSummary() {
-    int totalCalories = 0;
-    int totalCarbs = 0;
-    int totalProtein = 0;
-    int totalFat = 0;
+    double totalCalories = 0;
+    double totalCarbs = 0;
+    double totalProtein = 0;
+    double totalFat = 0;
 
-    for (FoodItem food : displayedFoodList) {
-      totalCalories += food.getCalories();
-      // Add logic to calculate macros based on serving size
+    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
+
+    for (MealDetail meal : todayMeals) {
+      if (meal.getMealType().equalsIgnoreCase(currentMealType)) {
+        totalCalories += meal.getCalories();
+        try {
+          totalCarbs += Double.parseDouble(meal.getCarbs().replace("g", "").trim());
+          totalProtein += Double.parseDouble(meal.getProtein().replace("g", "").trim());
+          totalFat += Double.parseDouble(meal.getFat().replace("g", "").trim());
+        } catch (Exception e) {
+        }
+      }
     }
 
-    totalCaloriesText.setText(totalCalories + " kcal");
-    totalCarbsText.setText(totalCarbs + " g");
-    totalProteinText.setText(totalProtein + " g");
-    totalFatText.setText(totalFat + " g");
+    if (totalCaloriesText != null) {
+      totalCaloriesText.setText(String.format("%.0f kcal", totalCalories));
+    }
+    if (totalCarbsText != null) {
+      totalCarbsText.setText(String.format("%.0f g", totalCarbs));
+    }
+    if (totalProteinText != null) {
+      totalProteinText.setText(String.format("%.0f g", totalProtein));
+    }
+    if (totalFatText != null) {
+      totalFatText.setText(String.format("%.0f g", totalFat));
+    }
   }
 
   private List<FoodItem> createSampleFoodList() {
