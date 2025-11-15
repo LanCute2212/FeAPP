@@ -1,0 +1,499 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- Header -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- Back Button -->
+                <ImageView
+                    android:id="@+id/back_button"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_back"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:tint="#333333" />
+
+                <!-- Meal Type Dropdown -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/meal_type_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:hint=""
+                    android:minHeight="0dp"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxBackgroundColor="#FFFFFF"
+                    app:boxStrokeColor="#4CAF50"
+                    app:endIconMode="dropdown_menu"
+                    app:endIconTint="#4CAF50"
+                    app:startIconDrawable="@null"
+                    app:helperTextEnabled="false"
+                    app:errorEnabled="false"
+                    app:layout_constraintStart_toEndOf="@id/back_button"
+                    app:layout_constraintTop_toTopOf="@id/back_button"
+                    app:layout_constraintBottom_toBottomOf="@id/back_button"
+                    android:layout_marginStart="16dp"
+                    android:elevation="0dp">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/meal_type"
+                        android:layout_width="140dp"
+                        android:layout_height="40dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="40dp"
+                        android:paddingTop="0dp"
+                        android:paddingBottom="0dp"
+                        android:background="@android:color/transparent"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:gravity="center_vertical|start"
+                        android:inputType="none"
+                        android:textColor="#333333"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Food Illustration -->
+            <FrameLayout
+                android:id="@+id/food_illustration_container"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@id/header">
+
+                <ImageView
+                    android:id="@+id/food_illustration"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_meal"
+                    android:background="#E0E0E0" />
+
+                <ImageView
+                    android:id="@+id/camera_icon"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_margin="16dp"
+                    android:src="@drawable/ic_add"
+                    android:background="@drawable/circle_bg_light"
+                    android:padding="8dp"
+                    android:tint="#4CAF50" />
+
+            </FrameLayout>
+
+            <!-- Section 1: Food Input Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/food_input_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/food_illustration_container">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Tên thực phẩm mới -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Tên thực phẩm mới"
+                            android:fontFamily="@font/poppins_medium"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint=""
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="8dp"
+                            app:boxCornerRadiusTopEnd="8dp"
+                            app:boxCornerRadiusBottomStart="8dp"
+                            app:boxCornerRadiusBottomEnd="8dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxBackgroundColor="#F5F5F5"
+                            app:hintEnabled="false">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/food_name_input"
+                                android:layout_width="120dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textSize="14sp"
+                                android:textColor="#333333"
+                                android:textColorHint="#9E9E9E"
+                                android:hint="Ví dụ: cơm"
+                                android:padding="8dp"
+                                android:minHeight="40dp" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- Năng lượng -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Năng lượng"
+                            android:fontFamily="@font/poppins_medium"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint=""
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="8dp"
+                            app:boxCornerRadiusTopEnd="8dp"
+                            app:boxCornerRadiusBottomStart="8dp"
+                            app:boxCornerRadiusBottomEnd="8dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxBackgroundColor="#F5F5F5"
+                            app:hintEnabled="false"
+                            app:suffixText="Kcal"
+                            app:suffixTextColor="#333333">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/energy_input"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textSize="16sp"
+                                android:textColor="#333333"
+                                android:text="0.0"
+                                android:padding="8dp"
+                                android:minHeight="40dp"
+                                android:gravity="end" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- Khối lượng -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Khối lượng"
+                            android:fontFamily="@font/poppins_medium"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_lightning"
+                            android:layout_marginEnd="4dp"
+                            android:tint="#9E9E9E" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint=""
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="8dp"
+                            app:boxCornerRadiusTopEnd="8dp"
+                            app:boxCornerRadiusBottomStart="8dp"
+                            app:boxCornerRadiusBottomEnd="8dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxBackgroundColor="#F5F5F5"
+                            app:hintEnabled="false"
+                            app:suffixText="g"
+                            app:suffixTextColor="#333333">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/weight_input"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textSize="16sp"
+                                android:textColor="#333333"
+                                android:text="0.0"
+                                android:padding="8dp"
+                                android:minHeight="40dp"
+                                android:gravity="end" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@drawable/ic_forward"
+                            android:layout_marginStart="8dp"
+                            android:tint="#9E9E9E" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Section 2: Nutrition Summary Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/nutrition_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:layout_constraintTop_toBottomOf="@id/food_input_card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Carbs -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Carbs"
+                            android:fontFamily="@font/poppins_medium"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint=""
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="8dp"
+                            app:boxCornerRadiusTopEnd="8dp"
+                            app:boxCornerRadiusBottomStart="8dp"
+                            app:boxCornerRadiusBottomEnd="8dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxBackgroundColor="#F5F5F5"
+                            app:hintEnabled="false"
+                            app:suffixText="g"
+                            app:suffixTextColor="#333333">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/carbs_input"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textSize="16sp"
+                                android:textColor="#333333"
+                                android:text="0.0"
+                                android:padding="8dp"
+                                android:minHeight="40dp"
+                                android:gravity="end" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- Chất đạm (Protein) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Chất đạm"
+                            android:fontFamily="@font/poppins_medium"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint=""
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="8dp"
+                            app:boxCornerRadiusTopEnd="8dp"
+                            app:boxCornerRadiusBottomStart="8dp"
+                            app:boxCornerRadiusBottomEnd="8dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxBackgroundColor="#F5F5F5"
+                            app:hintEnabled="false"
+                            app:suffixText="g"
+                            app:suffixTextColor="#333333">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/protein_input"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textSize="16sp"
+                                android:textColor="#333333"
+                                android:text="0.0"
+                                android:padding="8dp"
+                                android:minHeight="40dp"
+                                android:gravity="end" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- Chất béo (Fat) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Chất béo"
+                            android:fontFamily="@font/poppins_medium"
+                            android:textColor="#333333"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:hint=""
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            app:boxCornerRadiusTopStart="8dp"
+                            app:boxCornerRadiusTopEnd="8dp"
+                            app:boxCornerRadiusBottomStart="8dp"
+                            app:boxCornerRadiusBottomEnd="8dp"
+                            app:boxStrokeWidth="0dp"
+                            app:boxBackgroundColor="#F5F5F5"
+                            app:hintEnabled="false"
+                            app:suffixText="g"
+                            app:suffixTextColor="#333333">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/fat_input"
+                                android:layout_width="100dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberDecimal"
+                                android:fontFamily="@font/poppins_regular"
+                                android:textSize="16sp"
+                                android:textColor="#333333"
+                                android:text="0.0"
+                                android:padding="8dp"
+                                android:minHeight="40dp"
+                                android:gravity="end" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                    <!-- + Chất khác (nếu có) -->
+                    <TextView
+                        android:id="@+id/other_nutrients"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="+ Chất khác (nếu có)"
+                        android:fontFamily="@font/poppins_medium"
+                        android:textColor="#4CAF50"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Conversion Rates Info -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Giá trị năng lượng được tính theo hệ số quy đổi: 1 g carbohydrate = 4 kcal, 1 g chất đạm = 4 kcal, 1 g chất béo = 9 kcal."
+                        android:fontFamily="@font/poppins_regular"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp"
+                        android:lineSpacingMultiplier="1.2" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Save Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/save_button"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:text="Lưu lại"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:fontFamily="@font/poppins_semi_bold"
+                app:backgroundTint="#4CAF50"
+                app:cornerRadius="12dp"
+                app:layout_constraintTop_toBottomOf="@id/nutrition_card" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

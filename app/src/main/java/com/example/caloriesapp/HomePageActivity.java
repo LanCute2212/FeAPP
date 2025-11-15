@@ -38,7 +38,9 @@ import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.dto.response.PhysicalProfileForm;
 import com.example.caloriesapp.dto.response.DietResponse;
 import com.example.caloriesapp.model.ActivityItem;
+import com.example.caloriesapp.model.MealDetail;
 import com.example.caloriesapp.session.SessionManager;
+import com.example.caloriesapp.util.MealDataManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -544,7 +546,12 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
     
-    double consumedCalories = 1200;
+    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
+    double consumedCalories = 0;
+    for (MealDetail meal : todayMeals) {
+      consumedCalories += meal.getCalories();
+    }
     
     double burnedCalories = 0;
     if (activityList != null) {
@@ -640,6 +647,18 @@ public class HomePageActivity extends AppCompatActivity {
     double proteinConsumed = 0;
     double fatConsumed = 0;
     double fiberConsumed = 0;
+    
+    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
+    
+    for (MealDetail meal : todayMeals) {
+      try {
+        carbsConsumed += Double.parseDouble(meal.getCarbs().replace("g", "").trim());
+        proteinConsumed += Double.parseDouble(meal.getProtein().replace("g", "").trim());
+        fatConsumed += Double.parseDouble(meal.getFat().replace("g", "").trim());
+      } catch (Exception e) {
+      }
+    }
     
     // Get daily targets (same values shown in "By Day" section)
     double[] dailyTargets = calculateDailyNutritionTargets();
