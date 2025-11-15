@@ -41,6 +41,7 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   private double baseCarbs = 0;
   private double baseProtein = 0;
   private double baseFat = 0;
+  private String selectedDate = null; // Date in format "yyyy-MM-dd", null means today
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,9 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     if (currentMealType == null) {
       currentMealType = "Breakfast";
     }
+    
+    // Get selected date from intent
+    selectedDate = getIntent().getStringExtra("selected_date");
 
     if (foodItem == null) {
       Toast.makeText(this, "Food item not found", Toast.LENGTH_SHORT).show();
@@ -235,7 +239,7 @@ public class MealDetailFoodActivity extends AppCompatActivity {
         String.format("%.1f", totalFat)
     );
 
-    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    String currentDate = (selectedDate != null) ? selectedDate : MealDataManager.getInstance().getCurrentDate();
     MealDetail mealDetail = new MealDetail(currentMealType, adjustedFood, currentDate);
     MealDataManager.getInstance().addMealDetail(mealDetail);
 

@@ -44,6 +44,7 @@ public class FoodTrackingActivity extends AppCompatActivity {
   private String currentMealType;
   private int currentTabIndex = 0;
   private String currentSearchQuery = "";
+  private String selectedDate = null; // Date in format "yyyy-MM-dd", null means today
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +56,9 @@ public class FoodTrackingActivity extends AppCompatActivity {
     if (currentMealType == null) {
       currentMealType = "Breakfast"; // Default value
     }
+    
+    // Get selected date from intent
+    selectedDate = getIntent().getStringExtra("selected_date");
 
     initializeViews();
     setupFoodList();
@@ -149,6 +153,9 @@ public class FoodTrackingActivity extends AppCompatActivity {
       public void onFoodClick(FoodItem food, int position) {
         Intent intent = new Intent(FoodTrackingActivity.this, MealDetailFoodActivity.class);
         intent.putExtra(MealDetailFoodActivity.EXTRA_FOOD_ITEM, food);
+        if (selectedDate != null) {
+          intent.putExtra("selected_date", selectedDate);
+        }
         intent.putExtra(EXTRA_MEAL_TYPE, currentMealType);
         startActivityForResult(intent, 2002);
       }
@@ -157,6 +164,9 @@ public class FoodTrackingActivity extends AppCompatActivity {
       public void onAddFoodClick(FoodItem food, int position) {
         Intent intent = new Intent(FoodTrackingActivity.this, MealDetailFoodActivity.class);
         intent.putExtra(MealDetailFoodActivity.EXTRA_FOOD_ITEM, food);
+        if (selectedDate != null) {
+          intent.putExtra("selected_date", selectedDate);
+        }
         intent.putExtra(EXTRA_MEAL_TYPE, currentMealType);
         startActivityForResult(intent, 2002);
       }
@@ -300,7 +310,7 @@ public class FoodTrackingActivity extends AppCompatActivity {
 
   private void addFoodToMeal(FoodItem food) {
     // Create MealDetail from FoodItem
-    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    String currentDate = (selectedDate != null) ? selectedDate : MealDataManager.getInstance().getCurrentDate();
     MealDetail mealDetail = new MealDetail(currentMealType, food, currentDate);
 
     // Save to data manager

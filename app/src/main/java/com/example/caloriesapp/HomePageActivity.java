@@ -83,6 +83,7 @@ public class HomePageActivity extends AppCompatActivity {
   private int selectedCarbPercent = 50;
   private int selectedProteinPercent = 23;
   private int selectedFatPercent = 27;
+  private String selectedDate = null; // Date in format "yyyy-MM-dd", null means today
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +91,7 @@ public class HomePageActivity extends AppCompatActivity {
     setContentView(R.layout.activity_topbar);
 
     email = getIntent().getStringExtra("email");
+    selectedDate = getIntent().getStringExtra("selected_date");
     sessionManager = new SessionManager(this);
     if (email == null) {
       email = sessionManager.getEmail();
@@ -160,24 +162,36 @@ public class HomePageActivity extends AppCompatActivity {
 
     findViewById(R.id.btn_xem_chi_tiet).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, MealDetailsActivity.class);
+      if (selectedDate != null) {
+        intent.putExtra("selected_date", selectedDate);
+      }
       startActivity(intent);
     });
 
     findViewById(R.id.breakfast_add_button).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
       intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Breakfast");
+      if (selectedDate != null) {
+        intent.putExtra("selected_date", selectedDate);
+      }
       startActivity(intent);
     });
 
     findViewById(R.id.lunch_add_button).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
       intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Lunch");
+      if (selectedDate != null) {
+        intent.putExtra("selected_date", selectedDate);
+      }
       startActivity(intent);
     });
 
     findViewById(R.id.dinner_add_button).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, FoodTrackingActivity.class);
       intent.putExtra(FoodTrackingActivity.EXTRA_MEAL_TYPE, "Dinner");
+      if (selectedDate != null) {
+        intent.putExtra("selected_date", selectedDate);
+      }
       startActivity(intent);
     });
 
@@ -351,8 +365,24 @@ public class HomePageActivity extends AppCompatActivity {
 
   private void populateWeekDates() {
     Calendar calendar = Calendar.getInstance();
-    Calendar today = Calendar.getInstance();
+    Calendar referenceDate = Calendar.getInstance();
     
+    // If a date is selected, use it as reference; otherwise use today
+    if (selectedDate != null) {
+      try {
+        String[] parts = selectedDate.split("-");
+        referenceDate.set(Integer.parseInt(parts[0]), 
+                         Integer.parseInt(parts[1]) - 1, 
+                         Integer.parseInt(parts[2]));
+        calendar = (Calendar) referenceDate.clone();
+      } catch (Exception e) {
+        // If parsing fails, use today
+        referenceDate = Calendar.getInstance();
+        calendar = Calendar.getInstance();
+      }
+    }
+    
+    Calendar today = Calendar.getInstance();
     int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
     int daysToSubtract = (currentDayOfWeek == Calendar.SUNDAY) ? 6 : currentDayOfWeek - Calendar.MONDAY;
@@ -369,18 +399,60 @@ public class HomePageActivity extends AppCompatActivity {
         findViewById(R.id.day_7)
     };
     
+    Calendar selectedCal = null;
+    boolean hasSelectedDate = false;
+    if (selectedDate != null) {
+      try {
+        String[] parts = selectedDate.split("-");
+        selectedCal = Calendar.getInstance();
+        selectedCal.set(Integer.parseInt(parts[0]), 
+                       Integer.parseInt(parts[1]) - 1, 
+                       Integer.parseInt(parts[2]));
+        hasSelectedDate = true;
+      } catch (Exception e) {
+        // Ignore
+      }
+    }
+    
     for (int i = 0; i < 7; i++) {
       int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
       dayTextViews[i].setText(String.valueOf(dayOfMonth));
+      
+      // Clear previous compound drawables
+      dayTextViews[i].setCompoundDrawables(null, null, null, null);
       
       boolean isToday = calendar.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH) &&
                        calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
                        calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
       
-      if (isToday) {
+      // Check if this is the selected date
+      boolean isSelectedDate = false;
+      if (hasSelectedDate && selectedCal != null) {
+        isSelectedDate = calendar.get(Calendar.DAY_OF_MONTH) == selectedCal.get(Calendar.DAY_OF_MONTH) &&
+                        calendar.get(Calendar.MONTH) == selectedCal.get(Calendar.MONTH) &&
+                        calendar.get(Calendar.YEAR) == selectedCal.get(Calendar.YEAR);
+      }
+      
+      // If a past day is selected (not today), highlight it with green
+      if (hasSelectedDate && isSelectedDate && !isToday) {
         dayTextViews[i].setBackgroundResource(R.drawable.day_background);
-      } else {
+        dayTextViews[i].setTextColor(Color.WHITE);
+      } 
+      // If today is selected or no date is selected, highlight today
+      else if (isToday && (!hasSelectedDate || isSelectedDate)) {
+        dayTextViews[i].setBackgroundResource(R.drawable.day_background);
+        dayTextViews[i].setTextColor(Color.WHITE);
+      } 
+      // For other days, no background
+      else {
         dayTextViews[i].setBackground(null);
+        dayTextViews[i].setTextColor(Color.parseColor("#0a0a0a"));
+      }
+      
+      // Show small green dot below today's date if it's visible and not the selected date
+      if (isToday && hasSelectedDate && !isSelectedDate) {
+        dayTextViews[i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, R.drawable.dot_indicator_green);
+        dayTextViews[i].setCompoundDrawablePadding(4);
       }
       
       calendar.add(Calendar.DAY_OF_MONTH, 1);
@@ -392,6 +464,24 @@ public class HomePageActivity extends AppCompatActivity {
   private void updateHeaderText() {
     Calendar calendar = Calendar.getInstance();
     
+    // If a date is selected, use it; otherwise use today
+    if (selectedDate != null) {
+      try {
+        String[] parts = selectedDate.split("-");
+        calendar.set(Integer.parseInt(parts[0]), 
+                    Integer.parseInt(parts[1]) - 1, 
+                    Integer.parseInt(parts[2]));
+      } catch (Exception e) {
+        // If parsing fails, use today
+        calendar = Calendar.getInstance();
+      }
+    }
+    
+    Calendar today = Calendar.getInstance();
+    boolean isToday = calendar.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH) &&
+                     calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+                     calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
+    
     String[] monthNames = {
         "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
         "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
@@ -402,7 +492,37 @@ public class HomePageActivity extends AppCompatActivity {
     int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
     
     TextView headerText = findViewById(R.id.header_text);
-    headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
+    if (isToday) {
+      headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
+    } else {
+      // For past dates, show "Yesterday" or the date
+      Calendar yesterday = Calendar.getInstance();
+      yesterday.add(Calendar.DAY_OF_MONTH, -1);
+      boolean isYesterday = calendar.get(Calendar.DAY_OF_MONTH) == yesterday.get(Calendar.DAY_OF_MONTH) &&
+                           calendar.get(Calendar.MONTH) == yesterday.get(Calendar.MONTH) &&
+                           calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR);
+      
+      if (isYesterday) {
+        String[] vietnameseMonths = {
+            "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+        };
+        headerText.setText("Hôm qua, " + dayOfMonth + " " + vietnameseMonths[calendar.get(Calendar.MONTH)]);
+      } else {
+        String[] vietnameseMonths = {
+            "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+            "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+        };
+        headerText.setText(dayOfMonth + " " + vietnameseMonths[calendar.get(Calendar.MONTH)]);
+      }
+    }
+  }
+  
+  private String getCurrentDateString() {
+    if (selectedDate != null) {
+      return selectedDate;
+    }
+    return MealDataManager.getInstance().getCurrentDate();
   }
 
   private String getDayOfWeekName(int dayOfWeek) {
@@ -514,13 +634,14 @@ public class HomePageActivity extends AppCompatActivity {
       public void onResponse(Call<BaseResponse<PhysicalProfileForm>> call, Response<BaseResponse<PhysicalProfileForm>> response) {
         if (response.isSuccessful() && response.body() != null && !response.body().isError()) {
           PhysicalProfileForm user = response.body().getData();
-          tdee = user.getTdee();
+          tdee = user.getTdee() != null ? user.getTdee() : 0;
           
           if (targetWeight != -1 && user.getWeight() > 0) {
             isWeightLoss = targetWeight < user.getWeight();
           }
           
           updateCalorieStats();
+          updateNutritionProgress();
         }
       }
       
@@ -531,22 +652,21 @@ public class HomePageActivity extends AppCompatActivity {
   }
   
   private void updateCalorieStats() {
-    if (tdee == 0) {
-      return;
-    }
+    double intake = 0;
     
-    double intake;
-    if (targetWeight == -1) {
-      intake = tdee;
-    } else {
-      if (isWeightLoss) {
-        intake = tdee - selectedAdjustmentLevel;
+    if (tdee > 0) {
+      if (targetWeight == -1) {
+        intake = tdee;
       } else {
-        intake = tdee + selectedAdjustmentLevel;
+        if (isWeightLoss) {
+          intake = tdee - selectedAdjustmentLevel;
+        } else {
+          intake = tdee + selectedAdjustmentLevel;
+        }
       }
     }
     
-    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    String currentDate = getCurrentDateString();
     List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
     double consumedCalories = 0;
     for (MealDetail meal : todayMeals) {
@@ -584,6 +704,7 @@ public class HomePageActivity extends AppCompatActivity {
       appleImg.setAlpha(0.2f);
     }
     
+    // Always update nutrition progress, even if intake is 0 (will show 0 targets)
     updateNutritionProgress();
     
     updateWeeklyCaloriesCircle(intake, consumedCalories);
@@ -629,16 +750,16 @@ public class HomePageActivity extends AppCompatActivity {
   }
   
   /**
-   * Calculates the daily nutrition targets based on TDEE and selected percentages.
+   * Calculates the daily nutrition targets based on intake calories and selected percentages.
    * These are the values displayed in the "By Day" section.
    */
-  private double[] calculateDailyNutritionTargets() {
-    if (tdee == 0) {
+  private double[] calculateDailyNutritionTargets(double intakeCalories) {
+    if (intakeCalories <= 0) {
       return new double[]{0, 0, 0};
     }
-    double carbsTarget = roundToTwoDecimals(((tdee * selectedCarbPercent) / 100.0) / 4.0);
-    double proteinTarget = roundToTwoDecimals(((tdee * selectedProteinPercent) / 100.0) / 4.0);
-    double fatTarget = roundToTwoDecimals(((tdee * selectedFatPercent) / 100.0) / 9.0);
+    double carbsTarget = roundToTwoDecimals(((intakeCalories * selectedCarbPercent) / 100.0) / 4.0);
+    double proteinTarget = roundToTwoDecimals(((intakeCalories * selectedProteinPercent) / 100.0) / 4.0);
+    double fatTarget = roundToTwoDecimals(((intakeCalories * selectedFatPercent) / 100.0) / 9.0);
     return new double[]{carbsTarget, proteinTarget, fatTarget};
   }
   
@@ -648,7 +769,7 @@ public class HomePageActivity extends AppCompatActivity {
     double fatConsumed = 0;
     double fiberConsumed = 0;
     
-    String currentDate = MealDataManager.getInstance().getCurrentDate();
+    String currentDate = getCurrentDateString();
     List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
     
     for (MealDetail meal : todayMeals) {
@@ -657,27 +778,54 @@ public class HomePageActivity extends AppCompatActivity {
         proteinConsumed += Double.parseDouble(meal.getProtein().replace("g", "").trim());
         fatConsumed += Double.parseDouble(meal.getFat().replace("g", "").trim());
       } catch (Exception e) {
+        // Ignore parsing errors
       }
     }
     
-    // Get daily targets (same values shown in "By Day" section)
-    double[] dailyTargets = calculateDailyNutritionTargets();
+    // Calculate intake calories (same logic as updateCalorieStats)
+    double intake = 0;
+    if (tdee > 0) {
+      if (targetWeight == -1) {
+        intake = tdee;
+      } else {
+        if (isWeightLoss) {
+          intake = tdee - selectedAdjustmentLevel;
+        } else {
+          intake = tdee + selectedAdjustmentLevel;
+        }
+      }
+    } else {
+      // If tdee is not loaded yet, try to get intake from the displayed value as fallback
+      if (tvIntake != null) {
+        try {
+          String intakeText = tvIntake.getText().toString();
+          if (!intakeText.isEmpty()) {
+            intake = Double.parseDouble(intakeText);
+          }
+        } catch (Exception e) {
+          intake = 0;
+        }
+      }
+    }
+    
+    // Get daily targets based on intake calories
+    double[] dailyTargets = calculateDailyNutritionTargets(intake);
     double carbsTarget = dailyTargets[0];
     double proteinTarget = dailyTargets[1];
     double fatTarget = dailyTargets[2];
     double fiberTarget = 49;
     
     if (tvCarbsProgress != null) {
-      tvCarbsProgress.setText(String.format("%.0f/%.0fg", carbsConsumed, carbsTarget));
+      tvCarbsProgress.setText(String.format("%.0fg / %.0fg", carbsConsumed, carbsTarget));
     }
     if (tvProteinProgress != null) {
-      tvProteinProgress.setText(String.format("%.0f/%.0fg", proteinConsumed, proteinTarget));
+      tvProteinProgress.setText(String.format("%.0fg / %.0fg", proteinConsumed, proteinTarget));
     }
     if (tvFatProgress != null) {
-      tvFatProgress.setText(String.format("%.0f/%.0fg", fatConsumed, fatTarget));
+      tvFatProgress.setText(String.format("%.0fg / %.0fg", fatConsumed, fatTarget));
     }
     if (tvFiberProgress != null) {
-      tvFiberProgress.setText(String.format("%.0f/%.0fg", fiberConsumed, fiberTarget));
+      tvFiberProgress.setText(String.format("%.0fg / %.0fg", fiberConsumed, fiberTarget));
     }
     
     if (progressCarbs != null && carbsTarget > 0) {
@@ -706,8 +854,20 @@ public class HomePageActivity extends AppCompatActivity {
       return;
     }
     
+    // Calculate intake calories (same logic as updateCalorieStats)
+    double intake;
+    if (targetWeight == -1) {
+      intake = tdee;
+    } else {
+      if (isWeightLoss) {
+        intake = tdee - selectedAdjustmentLevel;
+      } else {
+        intake = tdee + selectedAdjustmentLevel;
+      }
+    }
+    
     // Get the exact same daily targets that are displayed in "By Day" section
-    double[] dailyTargets = calculateDailyNutritionTargets();
+    double[] dailyTargets = calculateDailyNutritionTargets(intake);
     double dailyCarbsTarget = dailyTargets[0];
     double dailyProteinTarget = dailyTargets[1];
     double dailyFatTarget = dailyTargets[2];
@@ -943,7 +1103,9 @@ public class HomePageActivity extends AppCompatActivity {
       updateWeeklyCaloriesCircle(0, 0);
     }
     
+    // Refresh all data when returning to the activity
     updateCalorieStats();
+    updateNutritionProgress();
   }
   
   private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
