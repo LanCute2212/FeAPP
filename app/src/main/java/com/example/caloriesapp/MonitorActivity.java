@@ -19,8 +19,11 @@ import com.example.caloriesapp.apiclient.UserClient;
 import com.example.caloriesapp.dto.response.BaseResponse;
 import com.example.caloriesapp.dto.response.PhysicalProfileForm;
 import com.example.caloriesapp.model.MealDetail;
+import com.example.caloriesapp.model.DailyNutrition;
 import com.example.caloriesapp.session.SessionManager;
 import com.example.caloriesapp.util.MealDataManager;
+import com.example.caloriesapp.database.AppDatabase;
+import com.example.caloriesapp.repository.DailyNutritionRepository;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -52,6 +55,7 @@ public class MonitorActivity extends AppCompatActivity {
     private double bmr = 0;
     private SessionManager sessionManager;
     private Map<Integer, Boolean> daysBelowBMR = new HashMap<>(); // Day number -> is below BMR
+    private DailyNutritionRepository nutritionRepository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +68,11 @@ public class MonitorActivity extends AppCompatActivity {
         monthYearFormatForStats = new SimpleDateFormat("'tháng' M/yyyy", new Locale("vi", "VN"));
 
         sessionManager = new SessionManager(this);
+        
+        // Initialize Room database
+        AppDatabase database = AppDatabase.getDatabase(this);
+        nutritionRepository = new DailyNutritionRepository(database);
+        
         initializeViews();
         setupClickListeners();
         loadUserPhysicalProfile();
@@ -255,28 +264,77 @@ public class MonitorActivity extends AppCompatActivity {
         daysBelowBMR.clear();
         
         if (bmr <= 0) {
+            updateCalendar();
+            updateStatistics();
             return;
         }
         
         Calendar calendar = (Calendar) currentMonth.clone();
         int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
         
-        for (int day = 1; day <= daysInMonth; day++) {
-            calendar.set(Calendar.DAY_OF_MONTH, day);
-            String dateStr = formatDateForMealData(calendar);
-            
-            List<MealDetail> meals = MealDataManager.getInstance().getMealDetailsForDate(dateStr);
-            double totalCalories = 0;
-            
-            for (MealDetail meal : meals) {
-                totalCalories += meal.getCalories();
+        // Get start and end dates for the month
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        String startDate = formatDateForMealData(calendar);
+        calendar.set(Calendar.DAY_OF_MONTH, daysInMonth);
+        String endDate = formatDateForMealData(calendar);
+        
+        // Load data from Room database for the month
+        nutritionRepository.getByDateRange(startDate, endDate, new DailyNutritionRepository.OnDataLoadedListener<List<DailyNutrition>>() {
+            @Override
+            public void onDataLoaded(List<DailyNutrition> nutritionList) {
+                // Process Room data
+                for (DailyNutrition nutrition : nutritionList) {
+                    try {
+                        String[] parts = nutrition.getDate().split("-");
+                        int day = Integer.parseInt(parts[2]);
+                        double consumed = nutrition.getConsumed();
+                        
+                        // Mark day as below BMR if consumed calories are less than BMR
+                        if (consumed > 0 && consumed < bmr) {
+                            daysBelowBMR.put(day, true);
+                        }
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+                
+                // Also check MealDataManager for current day data that might not be saved yet
+                Calendar cal = (Calendar) currentMonth.clone();
+                for (int day = 1; day <= daysInMonth; day++) {
+                    cal.set(Calendar.DAY_OF_MONTH, day);
+                    String dateStr = formatDateForMealData(cal);
+                    
+                    // Check if already processed from Room
+                    boolean foundInRoom = false;
+                    for (DailyNutrition n : nutritionList) {
+                        if (n.getDate().equals(dateStr)) {
+                            foundInRoom = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!foundInRoom) {
+                        List<MealDetail> meals = MealDataManager.getInstance().getMealDetailsForDate(dateStr);
+                        double totalCalories = 0;
+                        
+                        for (MealDetail meal : meals) {
+                            totalCalories += meal.getCalories();
+                        }
+                        
+                        // Mark day as below BMR if consumed calories are less than BMR
+                        if (totalCalories > 0 && totalCalories < bmr) {
+                            daysBelowBMR.put(day, true);
+                        }
+                    }
+                }
+                
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    updateCalendar();
+                    updateStatistics();
+                });
             }
-            
-            // Mark day as below BMR if consumed calories are less than BMR
-            if (totalCalories > 0 && totalCalories < bmr) {
-                daysBelowBMR.put(day, true);
-            }
-        }
+        });
     }
     
     private String formatDateForMealData(Calendar calendar) {
@@ -295,41 +353,94 @@ public class MonitorActivity extends AppCompatActivity {
         int daysBelowBMRCount = daysBelowBMR.size();
         tvDaysBelowBMR.setText(String.format("%02d ngày", daysBelowBMRCount));
         
-        // TODO: Calculate other statistics (recommended days, over intake days, etc.)
-        // For now, keeping default values
-        tvDaysRecommended.setText("0 ngày");
-        tvDaysOverIntake.setText("0 ngày");
-
-        // Calculate monthly totals
+        // Get start and end dates for the month
         Calendar calendar = (Calendar) currentMonth.clone();
         int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        double totalCaloriesConsumed = 0;
-        double totalCaloriesNeeded = 0;
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        String startDate = formatDateForMealData(calendar);
+        calendar.set(Calendar.DAY_OF_MONTH, daysInMonth);
+        String endDate = formatDateForMealData(calendar);
         
-        if (bmr > 0) {
-            totalCaloriesNeeded = bmr * daysInMonth;
-            
-            for (int day = 1; day <= daysInMonth; day++) {
-                calendar.set(Calendar.DAY_OF_MONTH, day);
-                String dateStr = formatDateForMealData(calendar);
+        // Load data from Room database
+        nutritionRepository.getByDateRange(startDate, endDate, new DailyNutritionRepository.OnDataLoadedListener<List<DailyNutrition>>() {
+            @Override
+            public void onDataLoaded(List<DailyNutrition> nutritionList) {
+                double totalCaloriesConsumed = 0;
+                double totalCaloriesNeeded = 0;
+                int daysRecommended = 0;
+                int daysOverIntake = 0;
                 
-                List<MealDetail> meals = MealDataManager.getInstance().getMealDetailsForDate(dateStr);
-                for (MealDetail meal : meals) {
-                    totalCaloriesConsumed += meal.getCalories();
+                // Calculate from Room data
+                for (DailyNutrition nutrition : nutritionList) {
+                    totalCaloriesConsumed += nutrition.getConsumed();
+                    totalCaloriesNeeded += nutrition.getCalories();
+                    
+                    // Check if day meets recommendations (consumed is close to target)
+                    if (nutrition.getCalories() > 0) {
+                        double ratio = nutrition.getConsumed() / nutrition.getCalories();
+                        if (ratio >= 0.9 && ratio <= 1.1) { // Within 10% of target
+                            daysRecommended++;
+                        } else if (nutrition.getConsumed() > nutrition.getCalories() * 1.1) {
+                            daysOverIntake++;
+                        }
+                    }
                 }
+                
+                // Also check MealDataManager for current day data
+                Calendar cal = (Calendar) currentMonth.clone();
+                for (int day = 1; day <= daysInMonth; day++) {
+                    cal.set(Calendar.DAY_OF_MONTH, day);
+                    String dateStr = formatDateForMealData(cal);
+                    
+                    // Check if already in Room database
+                    boolean foundInRoom = false;
+                    for (DailyNutrition n : nutritionList) {
+                        if (n.getDate().equals(dateStr)) {
+                            foundInRoom = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!foundInRoom) {
+                        List<MealDetail> meals = MealDataManager.getInstance().getMealDetailsForDate(dateStr);
+                        double dayCalories = 0;
+                        for (MealDetail meal : meals) {
+                            dayCalories += meal.getCalories();
+                        }
+                        
+                        if (dayCalories > 0) {
+                            totalCaloriesConsumed += dayCalories;
+                            if (bmr > 0) {
+                                totalCaloriesNeeded += bmr;
+                            }
+                        }
+                    }
+                }
+                
+                // Make final copies for use in lambda
+                final int finalDaysRecommended = daysRecommended;
+                final int finalDaysOverIntake = daysOverIntake;
+                final double finalTotalCaloriesNeeded = totalCaloriesNeeded;
+                final double finalTotalCaloriesConsumed = totalCaloriesConsumed;
+                
+                // Update UI on main thread
+                runOnUiThread(() -> {
+                    tvDaysRecommended.setText(String.format("%02d ngày", finalDaysRecommended));
+                    tvDaysOverIntake.setText(String.format("%02d ngày", finalDaysOverIntake));
+                    
+                    // Format numbers with dots as thousand separators
+                    tvTotalCaloriesNeeded.setText(formatNumberWithDots((int)finalTotalCaloriesNeeded) + " kcal");
+                    tvTotalCaloriesConsumed.setText(formatNumberWithDots((int)finalTotalCaloriesConsumed) + " kcal");
+                    
+                    // Calculate calories to increase and already increased
+                    double caloriesToIncrease = Math.max(0, finalTotalCaloriesNeeded - finalTotalCaloriesConsumed);
+                    double caloriesIncreased = finalTotalCaloriesConsumed - finalTotalCaloriesNeeded;
+                    
+                    tvCaloriesToIncrease.setText(formatNumberWithDots((int)caloriesToIncrease) + " kcal");
+                    tvCaloriesIncreased.setText(formatNumberWithDots((int)caloriesIncreased) + " kcal");
+                });
             }
-        }
-        
-        // Format numbers with dots as thousand separators
-        tvTotalCaloriesNeeded.setText(formatNumberWithDots((int)totalCaloriesNeeded) + " kcal");
-        tvTotalCaloriesConsumed.setText(formatNumberWithDots((int)totalCaloriesConsumed) + " kcal");
-        
-        // Calculate calories to increase and already increased
-        double caloriesToIncrease = Math.max(0, totalCaloriesNeeded - totalCaloriesConsumed);
-        double caloriesIncreased = totalCaloriesConsumed - totalCaloriesNeeded;
-        
-        tvCaloriesToIncrease.setText(formatNumberWithDots((int)caloriesToIncrease) + " kcal");
-        tvCaloriesIncreased.setText(formatNumberWithDots((int)caloriesIncreased) + " kcal");
+        });
     }
     
     private String formatNumberWithDots(int number) {

@@ -39,8 +39,11 @@ import com.example.caloriesapp.dto.response.PhysicalProfileForm;
 import com.example.caloriesapp.dto.response.DietResponse;
 import com.example.caloriesapp.model.ActivityItem;
 import com.example.caloriesapp.model.MealDetail;
+import com.example.caloriesapp.model.DailyNutrition;
 import com.example.caloriesapp.session.SessionManager;
 import com.example.caloriesapp.util.MealDataManager;
+import com.example.caloriesapp.database.AppDatabase;
+import com.example.caloriesapp.repository.DailyNutritionRepository;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -84,6 +87,7 @@ public class HomePageActivity extends AppCompatActivity {
   private int selectedProteinPercent = 23;
   private int selectedFatPercent = 27;
   private String selectedDate = null; // Date in format "yyyy-MM-dd", null means today
+  private DailyNutritionRepository nutritionRepository;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +100,10 @@ public class HomePageActivity extends AppCompatActivity {
     if (email == null) {
       email = sessionManager.getEmail();
     }
+    
+    // Initialize Room database
+    AppDatabase database = AppDatabase.getDatabase(this);
+    nutritionRepository = new DailyNutritionRepository(database);
     
     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
     targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
@@ -209,6 +217,9 @@ public class HomePageActivity extends AppCompatActivity {
     }
     
     loadUserPhysicalProfile();
+    
+    // Add sample data for testing (days 13 and 14) - Commented out to avoid duplicate inserts
+    // addSampleNutritionData();
   
   TextView btnDay = findViewById(R.id.btn_theo_ngay);
   TextView btnWeek = findViewById(R.id.btn_theo_tuan);
@@ -493,7 +504,7 @@ public class HomePageActivity extends AppCompatActivity {
     
     TextView headerText = findViewById(R.id.header_text);
     if (isToday) {
-      headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
+    headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
     } else {
       // For past dates, show "Yesterday" or the date
       Calendar yesterday = Calendar.getInstance();
@@ -522,6 +533,10 @@ public class HomePageActivity extends AppCompatActivity {
     if (selectedDate != null) {
       return selectedDate;
     }
+    return MealDataManager.getInstance().getCurrentDate();
+  }
+  
+  private String getTodayDateString() {
     return MealDataManager.getInstance().getCurrentDate();
   }
 
@@ -655,17 +670,72 @@ public class HomePageActivity extends AppCompatActivity {
     double intake = 0;
     
     if (tdee > 0) {
-      if (targetWeight == -1) {
-        intake = tdee;
+    if (targetWeight == -1) {
+      intake = tdee;
+    } else {
+      if (isWeightLoss) {
+        intake = tdee - selectedAdjustmentLevel;
       } else {
-        if (isWeightLoss) {
-          intake = tdee - selectedAdjustmentLevel;
-        } else {
-          intake = tdee + selectedAdjustmentLevel;
+        intake = tdee + selectedAdjustmentLevel;
         }
       }
     }
     
+    String currentDate = getCurrentDateString();
+    String todayDate = getTodayDateString();
+    
+    // Check if we have data in Room database for this date (past date)
+    if (selectedDate != null && !selectedDate.equals(todayDate)) {
+      // Make final copy of intake for use in inner class (tính từ TDEE, không dùng từ Room)
+      final double finalIntake = intake;
+      
+      // Load from Room database for past dates
+      nutritionRepository.getByDate(selectedDate, new DailyNutritionRepository.OnDataLoadedListener<DailyNutrition>() {
+        @Override
+        public void onDataLoaded(DailyNutrition nutrition) {
+          if (nutrition != null) {
+            // Chỉ lấy consumed từ Room, intake và remaining dùng giá trị đã tính
+            final double consumedCalories = nutrition.getConsumed();
+            final double remaining = finalIntake - consumedCalories;
+            
+            runOnUiThread(() -> {
+              // Intake và remaining dùng giá trị đã tính, không dùng từ Room
+              if (tvIntake != null) {
+                tvIntake.setText(String.valueOf((int)finalIntake));
+              }
+              if (tvRemaining != null) {
+                tvRemaining.setText(String.valueOf((int)remaining));
+              }
+              // Consumed chỉ map từ consumed trong Room
+              if (tvConsumed != null) {
+                tvConsumed.setText(String.valueOf((int)consumedCalories));
+              }
+              
+              if (tvDaNap != null) {
+                tvDaNap.setText("Intake\n" + (int)finalIntake);
+              }
+              
+              if (appleImg != null && finalIntake > 0) {
+                double completionPercent = consumedCalories / finalIntake;
+                completionPercent = Math.max(0.0, Math.min(1.0, completionPercent));
+                appleImg.setAlpha((float)completionPercent);
+              } else if (appleImg != null) {
+                appleImg.setAlpha(0.2f);
+              }
+              
+              updateNutritionProgressFromRoom(nutrition);
+            });
+          } else {
+            updateCalorieStatsFromMealData(finalIntake);
+          }
+        }
+      });
+    } else {
+      updateCalorieStatsFromMealData(intake);
+    }
+  }
+  
+  private void updateCalorieStatsFromMealData(double intake) {
     String currentDate = getCurrentDateString();
     List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
     double consumedCalories = 0;
@@ -704,11 +774,44 @@ public class HomePageActivity extends AppCompatActivity {
       appleImg.setAlpha(0.2f);
     }
     
-    // Always update nutrition progress, even if intake is 0 (will show 0 targets)
     updateNutritionProgress();
+    
+    if (selectedDate == null || selectedDate.equals(getCurrentDateString())) {
+      saveDailyNutritionToDatabase(intake, consumedCalories);
+    }
     
     updateWeeklyCaloriesCircle(intake, consumedCalories);
     updateWeeklyNutritionProgress();
+  }
+  
+  private void saveDailyNutritionToDatabase(double intake, double consumedCalories) {
+    String currentDate = getCurrentDateString();
+    
+    List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
+    double totalCarbs = 0;
+    double totalProtein = 0;
+    double totalFat = 0;
+    
+    for (MealDetail meal : todayMeals) {
+      try {
+        totalCarbs += Double.parseDouble(meal.getCarbs().replace("g", "").trim());
+        totalProtein += Double.parseDouble(meal.getProtein().replace("g", "").trim());
+        totalFat += Double.parseDouble(meal.getFat().replace("g", "").trim());
+      } catch (Exception e) {
+        // Ignore parsing errors
+      }
+    }
+    
+    DailyNutrition dailyNutrition = new DailyNutrition(
+        currentDate,
+        intake,
+        totalCarbs,
+        totalFat,
+        totalProtein,
+        consumedCalories
+    );
+    
+    nutritionRepository.insert(dailyNutrition);
   }
   
   private void updateWeeklyCaloriesCircle(double dailyIntake, double dailyConsumed) {
@@ -748,11 +851,7 @@ public class HomePageActivity extends AppCompatActivity {
     int progressPercent = (int)((consumed / target) * MAX_PROGRESS_PERCENT);
     return Math.min(MAX_PROGRESS_PERCENT, Math.max(MIN_PROGRESS_PERCENT, progressPercent));
   }
-  
-  /**
-   * Calculates the daily nutrition targets based on intake calories and selected percentages.
-   * These are the values displayed in the "By Day" section.
-   */
+
   private double[] calculateDailyNutritionTargets(double intakeCalories) {
     if (intakeCalories <= 0) {
       return new double[]{0, 0, 0};
@@ -764,6 +863,96 @@ public class HomePageActivity extends AppCompatActivity {
   }
   
   private void updateNutritionProgress() {
+    String todayDate = getTodayDateString();
+    if (selectedDate != null && !selectedDate.equals(todayDate)) {
+      nutritionRepository.getByDate(selectedDate, new DailyNutritionRepository.OnDataLoadedListener<DailyNutrition>() {
+        @Override
+        public void onDataLoaded(DailyNutrition nutrition) {
+          if (nutrition != null) {
+            updateNutritionProgressFromRoom(nutrition);
+          } else {
+            updateNutritionProgressFromMealData();
+          }
+        }
+      });
+    } else {
+      updateNutritionProgressFromMealData();
+    }
+  }
+  
+  private void updateNutritionProgressFromRoom(DailyNutrition nutrition) {
+    double carbsConsumed = nutrition.getCarbs();
+    double proteinConsumed = nutrition.getProtein();
+    double fatConsumed = nutrition.getFat();
+    double fiberConsumed = 0; // Room doesn't store fiber, use 0
+
+    // Intake dùng giá trị đã tính từ TDEE, không dùng từ Room
+    double intake = 0;
+    if (tdee > 0) {
+      if (targetWeight == -1) {
+        intake = tdee;
+      } else {
+        if (isWeightLoss) {
+          intake = tdee - selectedAdjustmentLevel;
+        } else {
+          intake = tdee + selectedAdjustmentLevel;
+        }
+      }
+    } else {
+      // Fallback: lấy từ tvIntake nếu tdee chưa load
+      if (tvIntake != null) {
+        try {
+          String intakeText = tvIntake.getText().toString();
+          if (!intakeText.isEmpty()) {
+            intake = Double.parseDouble(intakeText);
+          }
+        } catch (Exception e) {
+          intake = 0;
+        }
+      }
+    }
+    
+    double[] dailyTargets = calculateDailyNutritionTargets(intake);
+    double carbsTarget = dailyTargets[0];
+    double proteinTarget = dailyTargets[1];
+    double fatTarget = dailyTargets[2];
+    double fiberTarget = 49;
+    
+    if (tvCarbsProgress != null) {
+      tvCarbsProgress.setText(String.format("%.0fg / %.0fg", carbsConsumed, carbsTarget));
+    }
+    if (tvProteinProgress != null) {
+      tvProteinProgress.setText(String.format("%.0fg / %.0fg", proteinConsumed, proteinTarget));
+    }
+    if (tvFatProgress != null) {
+      tvFatProgress.setText(String.format("%.0fg / %.0fg", fatConsumed, fatTarget));
+    }
+    if (tvFiberProgress != null) {
+      tvFiberProgress.setText(String.format("%.0fg / %.0fg", fiberConsumed, fiberTarget));
+    }
+    
+    if (progressCarbs != null && carbsTarget > 0) {
+      int carbsPercent = (int)((carbsConsumed / carbsTarget) * 100);
+      progressCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
+    }
+    
+    if (progressProtein != null && proteinTarget > 0) {
+      int proteinPercent = (int)((proteinConsumed / proteinTarget) * 100);
+      progressProtein.setProgress(Math.min(100, Math.max(0, proteinPercent)));
+    }
+    
+    if (progressFat != null && fatTarget > 0) {
+      int fatPercent = (int)((fatConsumed / fatTarget) * 100);
+      progressFat.setProgress(Math.min(100, Math.max(0, fatPercent)));
+    }
+    
+    if (progressFiber != null && fiberTarget > 0) {
+      int fiberPercent = (int)((fiberConsumed / fiberTarget) * 100);
+      progressFiber.setProgress(Math.min(100, Math.max(0, fiberPercent)));
+    }
+  }
+  
+  private void updateNutritionProgressFromMealData() {
     double carbsConsumed = 0;
     double proteinConsumed = 0;
     double fatConsumed = 0;
@@ -778,11 +967,9 @@ public class HomePageActivity extends AppCompatActivity {
         proteinConsumed += Double.parseDouble(meal.getProtein().replace("g", "").trim());
         fatConsumed += Double.parseDouble(meal.getFat().replace("g", "").trim());
       } catch (Exception e) {
-        // Ignore parsing errors
       }
     }
     
-    // Calculate intake calories (same logic as updateCalorieStats)
     double intake = 0;
     if (tdee > 0) {
       if (targetWeight == -1) {
@@ -795,7 +982,6 @@ public class HomePageActivity extends AppCompatActivity {
         }
       }
     } else {
-      // If tdee is not loaded yet, try to get intake from the displayed value as fallback
       if (tvIntake != null) {
         try {
           String intakeText = tvIntake.getText().toString();
@@ -808,7 +994,6 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
     
-    // Get daily targets based on intake calories
     double[] dailyTargets = calculateDailyNutritionTargets(intake);
     double carbsTarget = dailyTargets[0];
     double proteinTarget = dailyTargets[1];
@@ -1106,6 +1291,36 @@ public class HomePageActivity extends AppCompatActivity {
     // Refresh all data when returning to the activity
     updateCalorieStats();
     updateNutritionProgress();
+  }
+  
+  private void addSampleNutritionData() {
+    Calendar calendar = Calendar.getInstance();
+    int currentYear = calendar.get(Calendar.YEAR);
+    int currentMonth = calendar.get(Calendar.MONTH) + 1; // Month is 1-based for date string
+    
+    // Sample data for day 13
+    String date13 = String.format("%04d-%02d-%02d", currentYear, currentMonth, 13);
+    DailyNutrition nutrition13 = new DailyNutrition(
+        date13,
+        2000.0,  // calories target
+        150.0,   // carbs (g)
+        60.0,    // fat (g)
+        120.0,   // protein (g)
+        1800.0   // consumed calories
+    );
+    nutritionRepository.insert(nutrition13);
+    
+    // Sample data for day 14
+    String date14 = String.format("%04d-%02d-%02d", currentYear, currentMonth, 14);
+    DailyNutrition nutrition14 = new DailyNutrition(
+        date14,
+        2000.0,  // calories target
+        180.0,   // carbs (g)
+        70.0,    // fat (g)
+        140.0,   // protein (g)
+        2100.0   // consumed calories
+    );
+    nutritionRepository.insert(nutrition14);
   }
   
   private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
