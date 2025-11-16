@@ -47,6 +47,7 @@
 
         <activity android:name=".MealDetailsActivity" />
 
+        <activity android:name=".WorkoutListActivity" />
 
         <activity
             android:name=".MainActivity"

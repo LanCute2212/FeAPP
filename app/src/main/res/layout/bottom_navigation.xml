@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottomBar"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:elevation="4dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp">
+
+        <!-- Left aligned item (e.g., journal icon) -->
+        <ImageView
+            android:id="@+id/bottom_left_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_journal"
+            app:tint="#4CAF50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="20dp"/>
+
+        <!-- Center items (workout, explore) -->
+        <ImageView
+            android:id="@+id/bottom_workout_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_running"
+            app:layout_constraintStart_toEndOf="@id/bottom_left_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="50dp" />
+
+        <ImageView
+            android:id="@+id/search_icon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/ic_search"
+            app:tint="#4CAF50"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <ImageView
+            android:id="@+id/bottom_explore_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_compass"
+            app:layout_constraintEnd_toStartOf="@id/bottom_right_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="40dp" />
+
+        <!-- Right aligned item (e.g., help icon) -->
+        <ImageView
+            android:id="@+id/bottom_right_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_headphones"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="20dp"/>
+
+        <!-- Labels below icons -->
+        <TextView
+            android:id="@+id/bottom_journal_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Diary"
+            android:textSize="12sp"
+            android:textColor="#4CAF50"
+            app:layout_constraintStart_toStartOf="@id/bottom_left_icon"
+            app:layout_constraintTop_toBottomOf="@id/bottom_left_icon"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="0dp"/>
+
+        <TextView
+            android:id="@+id/bottom_workout_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Exercise"
+            android:textSize="12sp"
+            android:textColor="#9E9E9E"
+            app:layout_constraintStart_toStartOf="@id/bottom_workout_icon"
+            app:layout_constraintTop_toBottomOf="@id/bottom_workout_icon"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="-9dp"/>
+
+        <TextView
+            android:id="@+id/bottom_explore_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Explore"
+            android:textSize="12sp"
+            android:textColor="#9E9E9E"
+            app:layout_constraintEnd_toEndOf="@id/bottom_explore_icon"
+            app:layout_constraintTop_toBottomOf="@id/bottom_explore_icon"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="-6dp"/>
+
+        <TextView
+            android:id="@+id/bottom_help_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Help"
+            android:textSize="12sp"
+            android:textColor="#9E9E9E"
+            app:layout_constraintEnd_toEndOf="@id/bottom_right_icon"
+            app:layout_constraintTop_toBottomOf="@id/bottom_right_icon"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="2dp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>
+

@@ -178,6 +178,17 @@ public class HomePageActivity extends AppCompatActivity {
       startActivity(intent);
     });
 
+    // Bottom navigation click listeners
+    findViewById(R.id.bottom_workout_icon).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, WorkoutListActivity.class);
+      startActivity(intent);
+    });
+
+    findViewById(R.id.bottom_workout_label).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, WorkoutListActivity.class);
+      startActivity(intent);
+    });
+
     setupCollapsibleActivityHeader();
     
     View addActivityButton = findViewById(R.id.add_activity);
