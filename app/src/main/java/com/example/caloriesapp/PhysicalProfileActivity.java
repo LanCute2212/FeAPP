@@ -31,7 +31,7 @@ import java.util.List;
 public class PhysicalProfileActivity extends AppCompatActivity {
 
     private TextView tvName, tvEmail, tvGender, tvAge, tvHeight, tvWeight,
-            tvActivity, tvCalories, tvBMI, tvBMR, tvTDEE, tvTarget, tvAdjustment;
+            tvActivity, tvBMI, tvBMR, tvTDEE, tvTarget, tvAdjustment;
 
     private double currentWeight;
     private double targetWeight = -1;
@@ -56,7 +56,6 @@ public class PhysicalProfileActivity extends AppCompatActivity {
         tvHeight = findViewById(R.id.tvHeight);
         tvWeight = findViewById(R.id.tvWeight);
         tvActivity = findViewById(R.id.tvActivity);
-        tvCalories = findViewById(R.id.tvCalories);
         tvBMI = findViewById(R.id.tvBMI);
         tvBMR = findViewById(R.id.tvBMR);
         tvTDEE = findViewById(R.id.tvTDEE);

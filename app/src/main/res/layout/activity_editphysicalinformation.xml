@@ -1,91 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    android:padding="24dp">
+    android:orientation="vertical"
+    android:background="#F5F5F5">
 
-    <LinearLayout
+    <!-- Modern Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_gravity="center">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/white"
+        android:elevation="4dp">
 
-        <EditText
-            android:id="@+id/etAge"
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_back"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:layout_gravity="start|center_vertical" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Chỉnh sửa thông tin thể chất"
+            android:textSize="20sp"
+            android:textColor="@android:color/black"
+            android:fontFamily="@font/poppins_bold"
+            android:textStyle="bold" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D3D3D3"
-            android:hint="Age"
-            android:inputType="number"
-            android:padding="10dp"
-            android:textColor="#000"
-            android:layout_marginBottom="12dp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etGender"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D3D3D3"
-            android:hint="Gender"
-            android:padding="10dp"
-            android:textColor="#000"
-            android:layout_marginBottom="12dp" />
+            <!-- Form Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#FFFFFF"
+                android:layout_marginBottom="16dp">
 
-        <EditText
-            android:id="@+id/etWeight"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D3D3D3"
-            android:hint="Weight (kg)"
-            android:inputType="numberDecimal"
-            android:padding="10dp"
-            android:textColor="#000"
-            android:layout_marginBottom="12dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
-        <EditText
-            android:id="@+id/etHeight"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D3D3D3"
-            android:hint="Height (cm)"
-            android:inputType="numberDecimal"
-            android:padding="10dp"
-            android:textColor="#000"
-            android:layout_marginBottom="12dp" />
+                    <!-- Age -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tuổi"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="8dp" />
 
-        <EditText
-            android:id="@+id/etLevelActivity"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D3D3D3"
-            android:hint="Level Activity"
-            android:padding="10dp"
-            android:textColor="#000"
-            android:layout_marginBottom="12dp" />
+                    <EditText
+                        android:id="@+id/etAge"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="Nhập tuổi"
+                        android:inputType="number"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#000000"
+                        android:textColorHint="#999999"
+                        android:fontFamily="@font/poppins_regular"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="20dp" />
 
-        <EditText
-            android:id="@+id/etGoal"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="#D3D3D3"
-            android:hint="Goal"
-            android:padding="10dp"
-            android:textColor="#000"
-            android:layout_marginBottom="20dp" />
+                    <!-- Gender Spinner -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Giới tính"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="8dp" />
 
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="Save"
-            android:background="@drawable/bg_button"
-            android:textColor="@color/white"
-            android:textStyle="bold"
-            android:textAllCaps="false" />
+                    <Spinner
+                        android:id="@+id/spinnerGender"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_edittext"
+                        android:spinnerMode="dropdown"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:layout_marginBottom="20dp" />
 
-    </LinearLayout>
-</ScrollView>
+                    <!-- Weight -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cân nặng (kg)"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="8dp" />
 
+                    <EditText
+                        android:id="@+id/etWeight"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="Nhập cân nặng"
+                        android:inputType="numberDecimal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#000000"
+                        android:textColorHint="#999999"
+                        android:fontFamily="@font/poppins_regular"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="20dp" />
 
+                    <!-- Height -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chiều cao (cm)"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="8dp" />
+
+                    <EditText
+                        android:id="@+id/etHeight"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="Nhập chiều cao"
+                        android:inputType="numberDecimal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#000000"
+                        android:textColorHint="#999999"
+                        android:fontFamily="@font/poppins_regular"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Activity Level Spinner -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mức độ hoạt động"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="8dp" />
+
+                    <Spinner
+                        android:id="@+id/spinnerActivityLevel"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_edittext"
+                        android:spinnerMode="dropdown"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:layout_marginBottom="20dp" />
+
+                    <!-- Goal -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mục tiêu"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="8dp" />
+
+                    <EditText
+                        android:id="@+id/etGoal"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="Nhập mục tiêu"
+                        android:inputType="numberDecimal"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="#000000"
+                        android:textColorHint="#999999"
+                        android:fontFamily="@font/poppins_regular"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="24dp" />
+
+                    <!-- Save Button -->
+                    <Button
+                        android:id="@+id/btnSave"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:text="Lưu"
+                        android:background="@drawable/bg_button"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:textAllCaps="false"
+                        android:fontFamily="@font/poppins_semi_bold"
+                        android:textSize="16sp"
+                        android:elevation="4dp" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

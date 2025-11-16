@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="gender_options">
+        <item>Nam</item>
+        <item>Nữ</item>
+    </string-array>
+
+    <string-array name="activity_level_options">
+        <item>Ít vận động (ngồi nhiều): ×1.2</item>
+        <item>Hoạt động nhẹ: ×1.375</item>
+        <item>Hoạt động vừa (tập 3–5 buổi/tuần): ×1.55</item>
+        <item>Hoạt động nặng: ×1.725</item>
+        <item>Rất nặng: ×1.9</item>
+    </string-array>
+
+    <string-array name="activity_level_values">
+        <item>1.2</item>
+        <item>1.375</item>
+        <item>1.55</item>
+        <item>1.725</item>
+        <item>1.9</item>
+    </string-array>
+</resources>
+

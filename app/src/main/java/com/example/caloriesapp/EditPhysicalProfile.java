@@ -2,8 +2,12 @@ package com.example.caloriesapp;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,10 +24,13 @@ import retrofit2.Response;
 
 public class EditPhysicalProfile extends AppCompatActivity {
 
-    private EditText txtAge, txtGender, txtWeight, txtHeight, txtLevelActivity, txtGoal;
+    private EditText txtAge, txtWeight, txtHeight, txtGoal;
+    private Spinner spinnerGender, spinnerActivityLevel;
     private Button btnSave;
 
     private String email;
+    private String selectedGender = "Nam";
+    private double selectedActivityLevel = 1.2;
 
     private int userId;
 
@@ -42,24 +49,65 @@ public class EditPhysicalProfile extends AppCompatActivity {
         }
 
         txtAge = findViewById(R.id.etAge);
-        txtGender = findViewById(R.id.etGender);
+        spinnerGender = findViewById(R.id.spinnerGender);
         txtWeight = findViewById(R.id.etWeight);
         txtHeight = findViewById(R.id.etHeight);
-        txtLevelActivity = findViewById(R.id.etLevelActivity);
+        spinnerActivityLevel = findViewById(R.id.spinnerActivityLevel);
         txtGoal = findViewById(R.id.etGoal);
         btnSave = findViewById(R.id.btnSave);
+
+        // Setup back button
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        // Setup Gender Spinner with custom adapter
+        ArrayAdapter<CharSequence> genderAdapter = ArrayAdapter.createFromResource(this,
+                R.array.gender_options, R.layout.spinner_item);
+        genderAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spinnerGender.setAdapter(genderAdapter);
+
+        // Setup Activity Level Spinner with custom adapter
+        ArrayAdapter<CharSequence> activityAdapter = ArrayAdapter.createFromResource(this,
+                R.array.activity_level_options, R.layout.spinner_item);
+        activityAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
+        spinnerActivityLevel.setAdapter(activityAdapter);
+
+        // Setup Gender Spinner listener
+        spinnerGender.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String[] genderOptions = getResources().getStringArray(R.array.gender_options);
+                selectedGender = genderOptions[position];
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+
+        // Setup Activity Level Spinner
+        spinnerActivityLevel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String[] activityValues = getResources().getStringArray(R.array.activity_level_values);
+                selectedActivityLevel = Double.parseDouble(activityValues[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         btnSave.setOnClickListener(v -> {
             try {
                 int age = Integer.parseInt(txtAge.getText().toString());
-                String gender = txtGender.getText().toString();
+                // Convert Vietnamese gender to English for API
+                String gender = selectedGender.equals("Nam") ? "Male" : "Female";
                 double weight = Double.parseDouble(txtWeight.getText().toString());
                 double height = Double.parseDouble(txtHeight.getText().toString());
-                double activityLevel = Double.parseDouble(txtLevelActivity.getText().toString().trim());
                 double goal = Double.parseDouble(txtGoal.getText().toString().trim());
 
                 PhysicalEditProfileForm form = new PhysicalEditProfileForm(userId,
-                        age, gender, weight, height, activityLevel, goal
+                        age, gender, weight, height, selectedActivityLevel, goal
                 );
 
                 UserClient userClient = ApiClient.getClient().create(UserClient.class);
