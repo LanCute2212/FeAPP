@@ -78,6 +78,8 @@ public class HomePageActivity extends AppCompatActivity {
   private TextView weekCaloriesConsumed, weekCaloriesTarget;
   private TextView tvWeekCarbsProgress, tvWeekProteinProgress, tvWeekFatProgress;
   private ProgressBar progressWeekCarbs, progressWeekProtein, progressWeekFat;
+  private TextView tvCaloriesT2, tvCaloriesT3, tvCaloriesT4, tvCaloriesT5, tvCaloriesT6, tvCaloriesT7, tvCaloriesCN;
+  private View barT2, barT3, barT4, barT5, barT6, barT7, barCN;
   
   private double tdee = 0;
   private double targetWeight = -1;
@@ -136,6 +138,24 @@ public class HomePageActivity extends AppCompatActivity {
     progressWeekCarbs = findViewById(R.id.progress_week_carbs);
     progressWeekProtein = findViewById(R.id.progress_week_protein);
     progressWeekFat = findViewById(R.id.progress_week_fat);
+    
+    // Weekly bar chart calories text views
+    tvCaloriesT2 = findViewById(R.id.tv_calories_t2);
+    tvCaloriesT3 = findViewById(R.id.tv_calories_t3);
+    tvCaloriesT4 = findViewById(R.id.tv_calories_t4);
+    tvCaloriesT5 = findViewById(R.id.tv_calories_t5);
+    tvCaloriesT6 = findViewById(R.id.tv_calories_t6);
+    tvCaloriesT7 = findViewById(R.id.tv_calories_t7);
+    tvCaloriesCN = findViewById(R.id.tv_calories_cn);
+    
+    // Weekly bar chart views
+    barT2 = findViewById(R.id.bar_t2);
+    barT3 = findViewById(R.id.bar_t3);
+    barT4 = findViewById(R.id.bar_t4);
+    barT5 = findViewById(R.id.bar_t5);
+    barT6 = findViewById(R.id.bar_t6);
+    barT7 = findViewById(R.id.bar_t7);
+    barCN = findViewById(R.id.bar_cn);
 
     findViewById(R.id.icon_bell).setOnClickListener(v -> {
       Intent intent = new Intent(HomePageActivity.this, SettingActivity.class);
@@ -252,6 +272,9 @@ public class HomePageActivity extends AppCompatActivity {
   if (USE_HARD_CODED_WEEK_DATA) {
     updateWeeklyCaloriesCircle(0, 0);
   }
+  
+  // Load weekly calories data from Room database
+  loadWeeklyCaloriesData();
   }
   
   private double roundToTwoDecimals(double value) {
@@ -1096,6 +1119,128 @@ public class HomePageActivity extends AppCompatActivity {
     }
   }
   
+  private void loadWeeklyCaloriesData() {
+    Calendar calendar = Calendar.getInstance();
+    Calendar referenceDate = Calendar.getInstance();
+    
+    // If a date is selected, use it as reference; otherwise use today
+    if (selectedDate != null) {
+      try {
+        String[] parts = selectedDate.split("-");
+        referenceDate.set(Integer.parseInt(parts[0]), 
+                         Integer.parseInt(parts[1]) - 1, 
+                         Integer.parseInt(parts[2]));
+        calendar = (Calendar) referenceDate.clone();
+      } catch (Exception e) {
+        referenceDate = Calendar.getInstance();
+        calendar = Calendar.getInstance();
+      }
+    }
+    
+    // Calculate start of week (Monday)
+    int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+    int daysToSubtract = (currentDayOfWeek == Calendar.SUNDAY) ? 6 : currentDayOfWeek - Calendar.MONDAY;
+    calendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
+    
+    // Array to store dates for the week (Monday to Sunday)
+    String[] weekDates = new String[7];
+    TextView[] caloriesTextViews = {tvCaloriesT2, tvCaloriesT3, tvCaloriesT4, tvCaloriesT5, tvCaloriesT6, tvCaloriesT7, tvCaloriesCN};
+    
+    // Generate date strings for the week
+    for (int i = 0; i < 7; i++) {
+      int year = calendar.get(Calendar.YEAR);
+      int month = calendar.get(Calendar.MONTH) + 1;
+      int day = calendar.get(Calendar.DAY_OF_MONTH);
+      weekDates[i] = String.format("%04d-%02d-%02d", year, month, day);
+      calendar.add(Calendar.DAY_OF_MONTH, 1);
+    }
+    
+    // Load data for each day
+    final int[] loadedCount = {0};
+    final double[] caloriesData = new double[7];
+    
+    for (int i = 0; i < 7; i++) {
+      final int dayIndex = i;
+      final String date = weekDates[i];
+      
+      nutritionRepository.getByDate(date, new DailyNutritionRepository.OnDataLoadedListener<DailyNutrition>() {
+        @Override
+        public void onDataLoaded(DailyNutrition nutrition) {
+          double calories = 0;
+          if (nutrition != null) {
+            // Get calories from database column
+            calories = nutrition.getCalories();
+          }
+          
+          caloriesData[dayIndex] = calories;
+          loadedCount[0]++;
+          
+          // When all 7 days are loaded, update UI
+          if (loadedCount[0] == 7) {
+            runOnUiThread(() -> {
+              // Find max calories to calculate bar heights proportionally
+              double maxCalories = 0;
+              for (int j = 0; j < 7; j++) {
+                if (caloriesData[j] > maxCalories) {
+                  maxCalories = caloriesData[j];
+                }
+              }
+              
+              // Maximum bar height in dp (convert to pixels)
+              float maxBarHeightDp = 140f;
+              float density = getResources().getDisplayMetrics().density;
+              int maxBarHeightPx = (int)(maxBarHeightDp * density);
+              
+              // Minimum bar height (for visibility when value > 0 but very small)
+              int minBarHeightPx = (int)(4 * density);
+              
+              View[] bars = {barT2, barT3, barT4, barT5, barT6, barT7, barCN};
+              
+              for (int j = 0; j < 7; j++) {
+                // Update text views
+                if (caloriesTextViews[j] != null) {
+                  if (caloriesData[j] > 0) {
+                    caloriesTextViews[j].setText(String.valueOf((int)caloriesData[j]));
+                    caloriesTextViews[j].setVisibility(View.VISIBLE);
+                  } else {
+                    caloriesTextViews[j].setVisibility(View.GONE);
+                  }
+                }
+                
+                // Update bar heights
+                if (bars[j] != null) {
+                  int barHeightPx;
+                  if (caloriesData[j] <= 0) {
+                    // If calories is 0, bar height is 0
+                    barHeightPx = 0;
+                    bars[j].setVisibility(View.GONE);
+                  } else if (maxCalories > 0) {
+                    // Calculate proportional height
+                    double ratio = caloriesData[j] / maxCalories;
+                    barHeightPx = (int)(maxBarHeightPx * ratio);
+                    // Ensure minimum height for visibility
+                    if (barHeightPx < minBarHeightPx && caloriesData[j] > 0) {
+                      barHeightPx = minBarHeightPx;
+                    }
+                    bars[j].setVisibility(View.VISIBLE);
+                  } else {
+                    barHeightPx = 0;
+                    bars[j].setVisibility(View.GONE);
+                  }
+                  
+                  // Set bar height
+                  android.view.ViewGroup.LayoutParams params = bars[j].getLayoutParams();
+                  params.height = barHeightPx;
+                  bars[j].setLayoutParams(params);
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+  }
+  
   private void showDietModeBottomSheet() {
     BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
     View bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_diet_mode, null);
@@ -1291,6 +1436,7 @@ public class HomePageActivity extends AppCompatActivity {
     // Refresh all data when returning to the activity
     updateCalorieStats();
     updateNutritionProgress();
+    loadWeeklyCaloriesData();
   }
   
   private void addSampleNutritionData() {
