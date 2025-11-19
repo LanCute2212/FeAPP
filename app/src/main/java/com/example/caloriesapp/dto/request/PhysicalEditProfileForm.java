@@ -3,7 +3,7 @@ package com.example.caloriesapp.dto.request;
 public class PhysicalEditProfileForm {
 
     private int age;
-    private String gender;
+    private Boolean gender;
     private double weight;
     private double height;
     private Double activityLevel;
@@ -17,11 +17,11 @@ public class PhysicalEditProfileForm {
         this.age = age;
     }
 
-    public String getGender() {
+    public Boolean getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(Boolean gender) {
         this.gender = gender;
     }
 
@@ -60,7 +60,7 @@ public class PhysicalEditProfileForm {
     public PhysicalEditProfileForm() {
     }
 
-    public PhysicalEditProfileForm(int id, int age, String gender, double weight, double height, Double activityLevel, Double goal) {
+    public PhysicalEditProfileForm(int id, int age, Boolean gender, double weight, double height, Double activityLevel, Double goal) {
         this.age = age;
         this.gender = gender;
         this.weight = weight;

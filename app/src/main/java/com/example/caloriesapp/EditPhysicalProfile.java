@@ -56,22 +56,18 @@ public class EditPhysicalProfile extends AppCompatActivity {
         txtGoal = findViewById(R.id.etGoal);
         btnSave = findViewById(R.id.btnSave);
 
-        // Setup back button
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        // Setup Gender Spinner with custom adapter
         ArrayAdapter<CharSequence> genderAdapter = ArrayAdapter.createFromResource(this,
                 R.array.gender_options, R.layout.spinner_item);
         genderAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinnerGender.setAdapter(genderAdapter);
 
-        // Setup Activity Level Spinner with custom adapter
         ArrayAdapter<CharSequence> activityAdapter = ArrayAdapter.createFromResource(this,
                 R.array.activity_level_options, R.layout.spinner_item);
         activityAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         spinnerActivityLevel.setAdapter(activityAdapter);
 
-        // Setup Gender Spinner listener
         spinnerGender.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -84,7 +80,6 @@ public class EditPhysicalProfile extends AppCompatActivity {
             }
         });
 
-        // Setup Activity Level Spinner
         spinnerActivityLevel.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -100,8 +95,7 @@ public class EditPhysicalProfile extends AppCompatActivity {
         btnSave.setOnClickListener(v -> {
             try {
                 int age = Integer.parseInt(txtAge.getText().toString());
-                // Convert Vietnamese gender to English for API
-                String gender = selectedGender.equals("Nam") ? "Male" : "Female";
+                Boolean gender = selectedGender.equals("Nam");
                 double weight = Double.parseDouble(txtWeight.getText().toString());
                 double height = Double.parseDouble(txtHeight.getText().toString());
                 double goal = Double.parseDouble(txtGoal.getText().toString().trim());
