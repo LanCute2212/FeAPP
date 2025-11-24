@@ -58,11 +58,11 @@ public class WorkoutListActivity extends AppCompatActivity {
     private void setupBottomNavigation() {
         int greenColor = 0xFF4CAF50; // Green color
         int grayColor = 0xFF9E9E9E; // Gray color for inactive tabs
-        
+
         // Highlight Exercise tab (current screen)
         ImageView workoutIcon = findViewById(R.id.bottom_workout_icon);
         TextView workoutLabel = findViewById(R.id.bottom_workout_label);
-        
+
         if (workoutIcon != null) {
             workoutIcon.setColorFilter(greenColor);
         }
@@ -83,7 +83,7 @@ public class WorkoutListActivity extends AppCompatActivity {
         TextView exploreLabel = findViewById(R.id.bottom_explore_label);
         ImageView helpIcon = findViewById(R.id.bottom_right_icon);
         TextView helpLabel = findViewById(R.id.bottom_help_label);
-        
+
         if (exploreIcon != null) {
             exploreIcon.setColorFilter(grayColor);
         }
@@ -120,6 +120,21 @@ public class WorkoutListActivity extends AppCompatActivity {
         findViewById(R.id.bottom_workout_label).setOnClickListener(v -> {
             // Already on this screen
         });
+
+        // Blog/Explore tab - navigate to BlogActivity
+        findViewById(R.id.bottom_explore_icon).setOnClickListener(v -> {
+            Intent intent = new Intent(this, BlogActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
+
+        findViewById(R.id.bottom_explore_label).setOnClickListener(v -> {
+            Intent intent = new Intent(this, BlogActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void loadWorkouts() {
@@ -132,7 +147,7 @@ public class WorkoutListActivity extends AppCompatActivity {
         call.enqueue(new Callback<BaseResponse<List<WorkoutResponse>>>() {
             @Override
             public void onResponse(Call<BaseResponse<List<WorkoutResponse>>> call,
-                                   Response<BaseResponse<List<WorkoutResponse>>> response) {
+                    Response<BaseResponse<List<WorkoutResponse>>> response) {
                 progressBar.setVisibility(View.GONE);
 
                 if (response.isSuccessful() && response.body() != null) {
@@ -170,4 +185,3 @@ public class WorkoutListActivity extends AppCompatActivity {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
-

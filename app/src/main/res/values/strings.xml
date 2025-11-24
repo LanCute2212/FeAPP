@@ -22,4 +22,14 @@
         <item>English</item>
         <item>Vietnamese</item>
     </string-array>
+    
+    <!-- Blog Strings -->
+    <string name="blog_title">Blog Sống Khỏe</string>
+    <string name="blog_category_all">Tất cả</string>
+    <string name="blog_category_nutrition">Dinh dưỡng</string>
+    <string name="blog_category_exercise">Tập luyện</string>
+    <string name="blog_category_weight_loss">Giảm cân</string>
+    <string name="blog_featured">Nổi bật</string>
+    <string name="blog_latest">Mới nhất</string>
+    <string name="blog_time_ago">%s trước</string>
 </resources>
