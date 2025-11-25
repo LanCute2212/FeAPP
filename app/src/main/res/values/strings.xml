@@ -3,6 +3,7 @@
     <string name="loginStr">Login</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
+    <string name="close">Close</string>
     <string name="signup_text">Don’t have an account? <font color="#0E64D2">Sign up</font></string>
     <string name="welcome_back">Login\nWelcome back!</string>
     <string name="or_text">Or</string>

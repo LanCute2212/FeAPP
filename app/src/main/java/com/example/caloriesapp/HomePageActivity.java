@@ -749,30 +749,23 @@ public class HomePageActivity extends AppCompatActivity {
     String currentDate = getCurrentDateString();
     String todayDate = getTodayDateString();
 
-    // Check if we have data in Room database for this date (past date)
     if (selectedDate != null && !selectedDate.equals(todayDate)) {
-      // Make final copy of intake for use in inner class (tính từ TDEE, không dùng từ
-      // Room)
       final double finalIntake = intake;
 
-      // Load from Room database for past dates
       nutritionRepository.getByDate(selectedDate, new DailyNutritionRepository.OnDataLoadedListener<DailyNutrition>() {
         @Override
         public void onDataLoaded(DailyNutrition nutrition) {
           if (nutrition != null) {
-            // Chỉ lấy consumed từ Room, intake và remaining dùng giá trị đã tính
             final double consumedCalories = nutrition.getConsumed();
             final double remaining = finalIntake - consumedCalories;
 
             runOnUiThread(() -> {
-              // Intake và remaining dùng giá trị đã tính, không dùng từ Room
               if (tvIntake != null) {
                 tvIntake.setText(String.valueOf((int) finalIntake));
               }
               if (tvRemaining != null) {
                 tvRemaining.setText(String.valueOf((int) remaining));
               }
-              // Consumed chỉ map từ consumed trong Room
               if (tvConsumed != null) {
                 tvConsumed.setText(String.valueOf((int) consumedCalories));
               }

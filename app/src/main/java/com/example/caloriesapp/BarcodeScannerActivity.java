@@ -4,6 +4,10 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -36,6 +40,11 @@ public class BarcodeScannerActivity extends AppCompatActivity {
 
     private PreviewView viewFinder;
     private ExecutorService cameraExecutor;
+    private TextView barcodeValueText;
+    private TextView instructionText;
+    private volatile boolean hasCapturedBarcode = false;
+    private String capturedBarcodeValue = null;
+    private BarcodeAnalyzer barcodeAnalyzer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +52,17 @@ public class BarcodeScannerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_barcode_scanner);
 
         viewFinder = findViewById(R.id.viewFinder);
+        barcodeAnalyzer = new BarcodeAnalyzer();
+
+        ImageButton closeButton = findViewById(R.id.btn_close_scanner);
+        if (closeButton != null) {
+            closeButton.setOnClickListener(v -> finish());
+        }
+
+        FrameLayout captureButton = findViewById(R.id.capture_button);
+        if (captureButton != null) {
+            captureButton.setOnClickListener(v -> resetCaptureState());
+        }
 
         if (allPermissionsGranted()) {
             startCamera();
@@ -69,7 +89,7 @@ public class BarcodeScannerActivity extends AppCompatActivity {
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                         .build();
 
-                imageAnalysis.setAnalyzer(cameraExecutor, new BarcodeAnalyzer());
+                imageAnalysis.setAnalyzer(cameraExecutor, barcodeAnalyzer);
 
                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
@@ -87,6 +107,17 @@ public class BarcodeScannerActivity extends AppCompatActivity {
                 Log.e(TAG, "Camera initialization failed", e);
             }
         }, ContextCompat.getMainExecutor(this));
+    }
+
+    private void resetCaptureState() {
+        hasCapturedBarcode = false;
+        capturedBarcodeValue = null;
+        if (barcodeValueText != null) {
+            barcodeValueText.setText("Capture Barcode");
+        }
+        if (instructionText != null) {
+            instructionText.setText("Point your camera at a bar code");
+        }
     }
 
     private boolean allPermissionsGranted() {
@@ -115,29 +146,47 @@ public class BarcodeScannerActivity extends AppCompatActivity {
     }
 
     private class BarcodeAnalyzer implements ImageAnalysis.Analyzer {
+        private final BarcodeScanner scanner;
+
+        BarcodeAnalyzer() {
+            BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+                .build();
+            scanner = BarcodeScanning.getClient(options);
+        }
 
         @Override
         public void analyze(@NonNull ImageProxy imageProxy) {
+            if (hasCapturedBarcode) {
+                imageProxy.close();
+                return;
+            }
             @androidx.camera.core.ExperimentalGetImage
             android.media.Image mediaImage = imageProxy.getImage();
             if (mediaImage != null) {
                 InputImage image = InputImage.fromMediaImage(mediaImage,
                         imageProxy.getImageInfo().getRotationDegrees());
 
-                BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
-                        .setBarcodeFormats(
-                                Barcode.FORMAT_ALL_FORMATS)
-                        .build();
-
-                BarcodeScanner scanner = BarcodeScanning.getClient(options);
-
                 scanner.process(image)
                         .addOnSuccessListener(barcodes -> {
-                            for (Barcode barcode : barcodes) {
-                                String rawValue = barcode.getRawValue();
-                                Log.d(TAG, "Barcode detected: " + rawValue);
-                                runOnUiThread(() -> Toast.makeText(BarcodeScannerActivity.this, "Barcode: " + rawValue,
-                                        Toast.LENGTH_SHORT).show());
+                            if (!barcodes.isEmpty() && !hasCapturedBarcode) {
+                                Barcode barcode = barcodes.get(0);
+                                capturedBarcodeValue = barcode.getRawValue();
+                                hasCapturedBarcode = true;
+                                Log.d(TAG, "Barcode detected: " + capturedBarcodeValue);
+                                runOnUiThread(() -> {
+                                    if (barcodeValueText != null) {
+                                        barcodeValueText.setText(
+                                                capturedBarcodeValue != null ? capturedBarcodeValue : "Unknown barcode");
+                                    }
+                                    if (instructionText != null) {
+                                        instructionText.setText("Tap capture to scan another barcode");
+                                    }
+                                    Toast.makeText(BarcodeScannerActivity.this,
+                                            capturedBarcodeValue != null ? "Barcode: " + capturedBarcodeValue
+                                                    : "Barcode captured",
+                                            Toast.LENGTH_SHORT).show();
+                                });
                             }
                         })
                         .addOnFailureListener(e -> Log.e(TAG, "Barcode detection failed", e))
