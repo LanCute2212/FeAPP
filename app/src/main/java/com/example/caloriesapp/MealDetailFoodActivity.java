@@ -20,7 +20,7 @@ import com.google.android.material.textfield.TextInputEditText;
 public class MealDetailFoodActivity extends AppCompatActivity {
   public static final String EXTRA_FOOD_ITEM = "food_item";
   public static final String EXTRA_MEAL_TYPE = "meal_type";
-  
+
   private FoodItem foodItem;
   private String currentMealType;
   private AutoCompleteTextView mealTypeDropdown;
@@ -35,13 +35,13 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   private TextView fatValue;
   private TextView fatPercent;
   private MaterialButton addToMealButton;
-  
+
   private int servingCount = 1;
   private double baseCalories = 0;
   private double baseCarbs = 0;
   private double baseProtein = 0;
   private double baseFat = 0;
-  private String selectedDate = null; // Date in format "yyyy-MM-dd", null means today
+  private String selectedDate = null;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +53,7 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     if (currentMealType == null) {
       currentMealType = "Breakfast";
     }
-    
-    // Get selected date from intent
+
     selectedDate = getIntent().getStringExtra("selected_date");
 
     if (foodItem == null) {
@@ -110,14 +109,13 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   }
 
   private void setupMealTypeDropdown() {
-    String[] mealTypes = {"Sáng", "Trưa", "Tối"};
-    String[] mealTypeValues = {"Breakfast", "Lunch", "Dinner"};
+    String[] mealTypes = { "Sáng", "Trưa", "Tối" };
+    String[] mealTypeValues = { "Breakfast", "Lunch", "Dinner" };
 
     ArrayAdapter<String> adapter = new ArrayAdapter<>(
         this,
         R.layout.dropdown_item_meal_type,
-        mealTypes
-    );
+        mealTypes);
 
     mealTypeDropdown.setAdapter(adapter);
     mealTypeDropdown.setText(getMealTypeDisplayName(currentMealType), false);
@@ -141,13 +139,12 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   }
 
   private void setupServingInputs() {
-    String[] servingUnits = {"Khẩu phần (50g)", "100g", "200g", "1 cốc", "1 chén"};
-    
+    String[] servingUnits = { "Khẩu phần (50g)", "100g", "200g", "1 cốc", "1 chén" };
+
     ArrayAdapter<String> adapter = new ArrayAdapter<>(
         this,
         R.layout.dropdown_item_meal_type,
-        servingUnits
-    );
+        servingUnits);
 
     servingUnitDropdown.setAdapter(adapter);
     servingUnitDropdown.setText(servingUnits[0], false);
@@ -192,23 +189,23 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     double totalFat = baseFat * servingCount;
 
     double totalMacros = totalCarbs + totalProtein + totalFat;
-    
+
     calorieText.setText(String.format("%.0f Kcal", totalCalories));
-    
-    int carbsPercentValue = totalMacros > 0 ? (int)((totalCarbs / totalMacros) * 100) : 0;
-    int proteinPercentValue = totalMacros > 0 ? (int)((totalProtein / totalMacros) * 100) : 0;
-    int fatPercentValue = totalMacros > 0 ? (int)((totalFat / totalMacros) * 100) : 0;
+
+    int carbsPercentValue = totalMacros > 0 ? (int) ((totalCarbs / totalMacros) * 100) : 0;
+    int proteinPercentValue = totalMacros > 0 ? (int) ((totalProtein / totalMacros) * 100) : 0;
+    int fatPercentValue = totalMacros > 0 ? (int) ((totalFat / totalMacros) * 100) : 0;
 
     carbsPercent.setText(carbsPercentValue + "%");
     proteinPercent.setText(proteinPercentValue + "%");
     fatPercent.setText(fatPercentValue + "%");
 
     if (calorieProgress != null) {
-      calorieProgress.setMacros((float)carbsPercentValue, (float)proteinPercentValue, (float)fatPercentValue);
+      calorieProgress.setMacros((float) carbsPercentValue, (float) proteinPercentValue, (float) fatPercentValue);
     }
 
     if (carbsValue != null) {
-      carbsValue.setText("Carbs: " + String.format("%.1fg", totalCarbs));
+      carbsValue.setText("Carb: " + String.format("%.1fg", totalCarbs));
     }
     if (proteinValue != null) {
       proteinValue.setText("Chất đạm: " + String.format("%.1fg", totalProtein));
@@ -232,12 +229,11 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     FoodItem adjustedFood = new FoodItem(
         foodItem.getName(),
         foodItem.getServingSize(),
-        (int)totalCalories,
+        (int) totalCalories,
         foodItem.getIconResource(),
         String.format("%.1f", totalProtein),
         String.format("%.1f", totalCarbs),
-        String.format("%.1f", totalFat)
-    );
+        String.format("%.1f", totalFat));
 
     String currentDate = (selectedDate != null) ? selectedDate : MealDataManager.getInstance().getCurrentDate();
     MealDetail mealDetail = new MealDetail(currentMealType, adjustedFood, currentDate);
@@ -249,9 +245,10 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     resultIntent.putExtra("carbs", totalCarbs);
     resultIntent.putExtra("protein", totalProtein);
     resultIntent.putExtra("fat", totalFat);
-    
+
     setResult(RESULT_OK, resultIntent);
-    Toast.makeText(this, "Đã thêm vào bữa " + getMealTypeDisplayName(currentMealType).toLowerCase(), Toast.LENGTH_SHORT).show();
+    Toast.makeText(this, "Đã thêm vào bữa " + getMealTypeDisplayName(currentMealType).toLowerCase(), Toast.LENGTH_SHORT)
+        .show();
     finish();
   }
 
@@ -268,4 +265,3 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     }
   }
 }
-

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -21,14 +20,19 @@ import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.caloriesapp.dto.response.DishDto;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.barcode.BarcodeScanner;
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
 import com.google.mlkit.vision.barcode.BarcodeScanning;
 import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
+import com.example.caloriesapp.apiclient.ApiClient;
+import com.example.caloriesapp.apiclient.DishClient;
+import com.example.caloriesapp.dto.response.BaseResponse;
+import com.example.caloriesapp.model.FoodItem;
+import android.content.Intent;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,10 +50,14 @@ public class BarcodeScannerActivity extends AppCompatActivity {
     private String capturedBarcodeValue = null;
     private BarcodeAnalyzer barcodeAnalyzer;
 
+    private DishClient dishClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_barcode_scanner);
+
+        dishClient = ApiClient.getClient().create(DishClient.class);
 
         viewFinder = findViewById(R.id.viewFinder);
         barcodeAnalyzer = new BarcodeAnalyzer();
@@ -145,13 +153,34 @@ public class BarcodeScannerActivity extends AppCompatActivity {
         cameraExecutor.shutdown();
     }
 
+    private void showNotFoundDialog() {
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Không tìm thấy món ăn")
+                .setMessage("Không có món ăn trong cơ sở dữ liệu")
+                .setPositiveButton("Thêm mới", (dialog, which) -> {
+                    Intent intent = new Intent(BarcodeScannerActivity.this, AddFoodActivity.class);
+                    // Pass meal type if needed, defaulting to Breakfast as per MealDetail logic
+                    intent.putExtra("meal_type", "Breakfast");
+                    startActivity(intent);
+                    finish();
+                })
+                .setNegativeButton("Hủy", (dialog, which) -> {
+                    Intent intent = new Intent(BarcodeScannerActivity.this, HomePageActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
     private class BarcodeAnalyzer implements ImageAnalysis.Analyzer {
         private final BarcodeScanner scanner;
 
         BarcodeAnalyzer() {
             BarcodeScannerOptions options = new BarcodeScannerOptions.Builder()
-                .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
-                .build();
+                    .setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS)
+                    .build();
             scanner = BarcodeScanning.getClient(options);
         }
 
@@ -174,18 +203,59 @@ public class BarcodeScannerActivity extends AppCompatActivity {
                                 capturedBarcodeValue = barcode.getRawValue();
                                 hasCapturedBarcode = true;
                                 Log.d(TAG, "Barcode detected: " + capturedBarcodeValue);
+
                                 runOnUiThread(() -> {
                                     if (barcodeValueText != null) {
-                                        barcodeValueText.setText(
-                                                capturedBarcodeValue != null ? capturedBarcodeValue : "Unknown barcode");
+                                        barcodeValueText.setText(capturedBarcodeValue);
                                     }
-                                    if (instructionText != null) {
-                                        instructionText.setText("Tap capture to scan another barcode");
-                                    }
-                                    Toast.makeText(BarcodeScannerActivity.this,
-                                            capturedBarcodeValue != null ? "Barcode: " + capturedBarcodeValue
-                                                    : "Barcode captured",
+                                    Toast.makeText(BarcodeScannerActivity.this, "Đang tìm kiếm món ăn...",
                                             Toast.LENGTH_SHORT).show();
+
+                                    dishClient.getDishByBarcode(capturedBarcodeValue)
+                                            .enqueue(new retrofit2.Callback<BaseResponse<DishDto>>() {
+                                                @Override
+                                                public void onResponse(retrofit2.Call<BaseResponse<DishDto>> call,
+                                                        retrofit2.Response<BaseResponse<DishDto>> response) {
+                                                    if (response.isSuccessful() && response.body() != null
+                                                            && !response.body().isError()
+                                                            && response.body().getData() != null) {
+                                                        DishDto dish = response.body().getData();
+                                                        FoodItem foodItem = new FoodItem(
+                                                                dish.getName(),
+                                                                dish.getServingSize() != null ? dish.getServingSize()
+                                                                        : "1 serving",
+                                                                dish.getCalories() != null
+                                                                        ? dish.getCalories().intValue()
+                                                                        : 0,
+                                                                R.drawable.ic_meal,
+                                                                String.format("%.1f",
+                                                                        dish.getProtein() != null ? dish.getProtein()
+                                                                                : 0.0),
+                                                                String.format("%.1f",
+                                                                        dish.getCarb() != null ? dish.getCarb() : 0.0),
+                                                                String.format("%.1f",
+                                                                        dish.getFat() != null ? dish.getFat() : 0.0));
+
+                                                        Intent intent = new Intent(BarcodeScannerActivity.this,
+                                                                MealDetailFoodActivity.class);
+                                                        intent.putExtra(MealDetailFoodActivity.EXTRA_FOOD_ITEM,
+                                                                foodItem);
+                                                        intent.putExtra(MealDetailFoodActivity.EXTRA_MEAL_TYPE,
+                                                                "Breakfast");
+                                                        startActivity(intent);
+                                                        finish();
+                                                    } else {
+                                                        showNotFoundDialog();
+                                                    }
+                                                }
+
+                                                @Override
+                                                public void onFailure(retrofit2.Call<BaseResponse<DishDto>> call,
+                                                        Throwable t) {
+                                                    Log.e(TAG, "API call failed", t);
+                                                    showNotFoundDialog();
+                                                }
+                                            });
                                 });
                             }
                         })
