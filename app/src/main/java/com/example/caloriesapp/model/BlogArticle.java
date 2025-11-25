@@ -6,6 +6,7 @@ public class BlogArticle {
     private String category;
     private String timeAgo;
     private int imageResourceId;
+    private String imageUrl;
     private boolean isFeatured;
 
     public BlogArticle(int id, String title, String category, String timeAgo, int imageResourceId, boolean isFeatured) {
@@ -14,6 +15,17 @@ public class BlogArticle {
         this.category = category;
         this.timeAgo = timeAgo;
         this.imageResourceId = imageResourceId;
+        this.imageUrl = null;
+        this.isFeatured = isFeatured;
+    }
+
+    public BlogArticle(int id, String title, String category, String timeAgo, String imageUrl, boolean isFeatured) {
+        this.id = id;
+        this.title = title;
+        this.category = category;
+        this.timeAgo = timeAgo;
+        this.imageResourceId = 0;
+        this.imageUrl = imageUrl;
         this.isFeatured = isFeatured;
     }
 
@@ -65,5 +77,13 @@ public class BlogArticle {
 
     public void setFeatured(boolean featured) {
         isFeatured = featured;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

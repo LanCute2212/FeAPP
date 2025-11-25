@@ -228,6 +228,7 @@ public class MonitorActivity extends AppCompatActivity {
 
     private void loadUserPhysicalProfile() {
         String email = sessionManager.getEmail();
+        String token = sessionManager.getToken();
         if (email == null || email.isEmpty()) {
             updateCalendar();
             updateStatistics();
@@ -235,7 +236,7 @@ public class MonitorActivity extends AppCompatActivity {
         }
         
         UserClient userClient = ApiClient.getClient().create(UserClient.class);
-        Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(email);
+        Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(token, email);
         
         call.enqueue(new Callback<BaseResponse<PhysicalProfileForm>>() {
             @Override

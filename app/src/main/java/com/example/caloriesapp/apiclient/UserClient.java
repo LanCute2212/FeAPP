@@ -12,6 +12,7 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Query;
@@ -26,6 +27,6 @@ public interface UserClient {
     Call<BaseResponse> update(@Query("email") String email, @Body PhysicalEditProfileForm form);
 
     @GET("api/user/getInfor")
-    Call<BaseResponse<PhysicalProfileForm>> getInfo(@Query("email") String email);
+    Call<BaseResponse<PhysicalProfileForm>> getInfo(@Header("Authorization") String token, @Query("email") String email);
 
 }

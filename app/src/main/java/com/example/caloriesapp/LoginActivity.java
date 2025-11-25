@@ -74,9 +74,10 @@ public class LoginActivity extends AppCompatActivity {
                             if(data != null) {
                                 int userId = data.getUserId();
                                 String email = data.getEmail();
+                                String token = data.getJwtToken();
 
                                 SessionManager sessionManager = new SessionManager(LoginActivity.this);
-                                sessionManager.saveUserSession(userId, email);
+                                sessionManager.saveUserSession(userId, email, token);
 
                                 Intent intent = new Intent(LoginActivity.this, HomePageActivity.class);
                                 startActivity(intent);

@@ -67,6 +67,8 @@ public class HomePageActivity extends AppCompatActivity {
   private static final double HARD_CODED_WEEKLY_CONSUMED = 5000.0;
 
   private String email;
+
+  private String token;
   private ActivityAdapter activityAdapter;
   private List<ActivityItem> activityList;
   private SessionManager sessionManager;
@@ -97,6 +99,7 @@ public class HomePageActivity extends AppCompatActivity {
     setContentView(R.layout.activity_topbar);
 
     email = getIntent().getStringExtra("email");
+    token = getIntent().getStringExtra("token");
     selectedDate = getIntent().getStringExtra("selected_date");
     sessionManager = new SessionManager(this);
     if (email == null) {
@@ -695,7 +698,7 @@ public class HomePageActivity extends AppCompatActivity {
     }
 
     UserClient userClient = ApiClient.getClient().create(UserClient.class);
-    Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(email);
+    Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(token, email);
 
     call.enqueue(new Callback<BaseResponse<PhysicalProfileForm>>() {
       @Override

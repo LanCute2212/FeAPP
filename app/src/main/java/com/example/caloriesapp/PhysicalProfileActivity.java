@@ -73,13 +73,14 @@ public class PhysicalProfileActivity extends AppCompatActivity {
         findViewById(R.id.adjustment_container).setOnClickListener(v -> showAdjustmentDialog());
 
         String email = sessionManager.getEmail();
+        String token = sessionManager.getToken();
         if (email == null || email.isEmpty()) {
             Toast.makeText(this, "Không có email người dùng", Toast.LENGTH_SHORT).show();
             return;
         }
 
         UserClient userClient = ApiClient.getClient().create(UserClient.class);
-        Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(email);
+        Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(token, email);
 
         call.enqueue(new Callback<BaseResponse<PhysicalProfileForm>>() {
             @Override

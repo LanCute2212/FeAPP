@@ -8,6 +8,6 @@ import retrofit2.http.GET;
 
 public interface DietClient {
   @GET("api/diets")
-  Call<BaseResponse<java.util.List<DietResponse>>> getDiets();
+  Call<BaseResponse<List<DietResponse>>> getDiets();
 
 }

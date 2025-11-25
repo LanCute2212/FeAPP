@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.caloriesapp.R;
 import com.example.caloriesapp.model.BlogArticle;
 
@@ -67,10 +68,18 @@ public class BlogAdapter extends RecyclerView.Adapter<BlogAdapter.BlogViewHolder
             tvArticleCategory.setText(article.getCategory());
             tvArticleTime.setText(article.getTimeAgo());
 
-            // Set placeholder image (you can replace with actual image loading library like
-            // Glide or Picasso)
-            if (article.getImageResourceId() != 0) {
+            // Load image from URL using Glide
+            if (article.getImageUrl() != null && !article.getImageUrl().isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(article.getImageUrl())
+                        .placeholder(R.drawable.bg_blog_card)
+                        .error(R.drawable.bg_blog_card)
+                        .centerCrop()
+                        .into(ivArticleThumbnail);
+            } else if (article.getImageResourceId() != 0) {
                 ivArticleThumbnail.setImageResource(article.getImageResourceId());
+            } else {
+                ivArticleThumbnail.setImageResource(R.drawable.bg_blog_card);
             }
 
             itemView.setOnClickListener(v -> {

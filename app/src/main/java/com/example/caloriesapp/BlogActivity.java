@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.caloriesapp.adapter.BlogAdapter;
 import com.example.caloriesapp.model.BlogArticle;
 import com.example.caloriesapp.repository.BlogRepository;
@@ -27,7 +28,6 @@ public class BlogActivity extends AppCompatActivity {
     private ImageView ivSearch;
     private BlogRepository blogRepository;
 
-    // Category chips
     private android.widget.LinearLayout llCategoryContainer;
     private String selectedCategory = "all";
 
@@ -60,14 +60,10 @@ public class BlogActivity extends AppCompatActivity {
     }
 
     private void setupFeaturedArticle() {
-        // Set featured article (you can replace with actual image loading)
         tvFeaturedTitle.setText("5 Thực đơn Eat Clean cho người bận rộn");
-        // ivFeaturedImage.setImageResource(R.drawable.featured_food); // Add your image
     }
 
     private void setupCategoryChips() {
-        // Initial setup with just "All" or wait for API
-        // We will populate this in loadCategories
         addCategoryChip("All", "all");
         selectCategory("all");
     }
@@ -77,7 +73,6 @@ public class BlogActivity extends AppCompatActivity {
         chip.setText(name);
         chip.setTextSize(14);
 
-        // Layout params with margin
         android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
                 android.widget.LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -85,15 +80,12 @@ public class BlogActivity extends AppCompatActivity {
         params.setMargins(0, 0, marginEnd, 0);
         chip.setLayoutParams(params);
 
-        // Padding
         int paddingStartEnd = (int) (20 * getResources().getDisplayMetrics().density);
         int paddingTopBottom = (int) (8 * getResources().getDisplayMetrics().density);
         chip.setPadding(paddingStartEnd, paddingTopBottom, paddingStartEnd, paddingTopBottom);
 
-        // Click listener
         chip.setOnClickListener(v -> selectCategory(categoryId));
 
-        // Tag to store category ID if needed, or just use the passed ID in closure
         chip.setTag(categoryId);
 
         llCategoryContainer.addView(chip);
@@ -109,19 +101,15 @@ public class BlogActivity extends AppCompatActivity {
                 String tag = (String) tv.getTag();
 
                 if (category.equals(tag)) {
-                    // Selected state
                     tv.setTextColor(getResources().getColor(R.color.white));
-                    tv.setBackground(null); // Or specific selected background
+                    tv.setBackground(null);
                 } else {
-                    // Unselected state
                     tv.setBackgroundResource(R.drawable.bg_category_chip_unselected);
                     tv.setTextColor(getResources().getColor(R.color.blogTextPrimary));
                 }
             }
         }
 
-        // Filter articles
-        filterArticles(category);
     }
 
     private void setupRecyclerView() {
@@ -137,7 +125,6 @@ public class BlogActivity extends AppCompatActivity {
     }
 
     private void loadArticles() {
-        // Fetch posts from API
         blogRepository.getAllPosts().enqueue(
                 new retrofit2.Callback<com.example.caloriesapp.dto.response.BaseResponse<List<com.example.caloriesapp.dto.response.PostSummaryResponse>>>() {
                     @Override
@@ -160,25 +147,33 @@ public class BlogActivity extends AppCompatActivity {
                                             post.getTitle(),
                                             post.getCategoryName() != null ? post.getCategoryName() : "General",
                                             timeAgo,
-                                            0, // Image resource ID - can be loaded from URL later
+                                            post.getImageUrl() != null ? post.getImageUrl() : "",
                                             false);
                                     articleList.add(article);
                                 }
 
                                 blogAdapter.notifyDataSetChanged();
 
-                                // Set featured article if available
                                 if (!articleList.isEmpty()) {
-                                    tvFeaturedTitle.setText(articleList.get(0).getTitle());
+                                    BlogArticle featuredArticle = articleList.get(0);
+                                    tvFeaturedTitle.setText(featuredArticle.getTitle());
+                                    if (featuredArticle.getImageUrl() != null && !featuredArticle.getImageUrl().isEmpty()) {
+                                        Glide.with(BlogActivity.this)
+                                                .load(featuredArticle.getImageUrl())
+                                                .placeholder(R.drawable.bg_blog_card)
+                                                .error(R.drawable.bg_blog_card)
+                                                .centerCrop()
+                                                .into(ivFeaturedImage);
+                                    }
                                 }
                             } else {
                                 Toast.makeText(BlogActivity.this, "Error: " + baseResponse.getMessage(),
                                         Toast.LENGTH_SHORT).show();
-                                loadSampleData(); // Fallback to sample data
+                                loadSampleData();
                             }
                         } else {
                             Toast.makeText(BlogActivity.this, "Failed to load articles", Toast.LENGTH_SHORT).show();
-                            loadSampleData(); // Fallback to sample data
+                            loadSampleData();
                         }
                     }
 
@@ -188,7 +183,7 @@ public class BlogActivity extends AppCompatActivity {
                             Throwable t) {
                         Toast.makeText(BlogActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT)
                                 .show();
-                        loadSampleData(); // Fallback to sample data
+                        loadSampleData();
                     }
                 });
     }
@@ -236,10 +231,9 @@ public class BlogActivity extends AppCompatActivity {
     }
 
     private void setupBottomNavigation() {
-        int greenColor = 0xFF4CAF50; // Green color
-        int grayColor = 0xFF9E9E9E; // Gray color for inactive tabs
+        int greenColor = 0xFF4CAF50;
+        int grayColor = 0xFF9E9E9E;
 
-        // Highlight Blog tab (current screen)
         ImageView exploreIcon = findViewById(R.id.bottom_explore_icon);
         TextView exploreLabel = findViewById(R.id.bottom_explore_label);
 
@@ -250,7 +244,6 @@ public class BlogActivity extends AppCompatActivity {
             exploreLabel.setTextColor(greenColor);
         }
 
-        // Set other inactive tabs to gray
         ImageView journalIcon = findViewById(R.id.bottom_left_icon);
         TextView journalLabel = findViewById(R.id.bottom_journal_label);
         ImageView workoutIcon = findViewById(R.id.bottom_workout_icon);
@@ -277,7 +270,6 @@ public class BlogActivity extends AppCompatActivity {
             helpLabel.setTextColor(grayColor);
         }
 
-        // Set click listeners
         findViewById(R.id.bottom_left_icon).setOnClickListener(v -> {
             Intent intent = new Intent(this, HomePageActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -306,9 +298,7 @@ public class BlogActivity extends AppCompatActivity {
             finish();
         });
 
-        // Blog tab - already here, do nothing
         findViewById(R.id.bottom_explore_icon).setOnClickListener(v -> {
-            // Already on this screen
         });
 
         findViewById(R.id.bottom_explore_label).setOnClickListener(v -> {
@@ -316,14 +306,7 @@ public class BlogActivity extends AppCompatActivity {
         });
     }
 
-    private void filterArticles(String category) {
-        // TODO: Implement filtering logic based on category
-        // For now, just show all articles
-        Toast.makeText(this, "Filtering by: " + category, Toast.LENGTH_SHORT).show();
-    }
-
     private void loadCategories() {
-        // Fetch categories from API
         blogRepository.getAllCategories().enqueue(
                 new retrofit2.Callback<com.example.caloriesapp.dto.response.BaseResponse<List<com.example.caloriesapp.dto.response.CategoryResponse>>>() {
                     @Override
@@ -335,21 +318,17 @@ public class BlogActivity extends AppCompatActivity {
                                     .body();
 
                             if (!baseResponse.isError() && baseResponse.getData() != null) {
-                                // Categories loaded successfully
                                 List<com.example.caloriesapp.dto.response.CategoryResponse> categories = baseResponse
                                         .getData();
 
                                 llCategoryContainer.removeAllViews();
 
-                                // Add "All" chip
                                 addCategoryChip("All", "all");
 
-                                // Add dynamic chips
                                 for (com.example.caloriesapp.dto.response.CategoryResponse cat : categories) {
                                     addCategoryChip(cat.getName(), String.valueOf(cat.getId()));
                                 }
 
-                                // Reselect current category if it still exists, otherwise select "all"
                                 selectCategory(selectedCategory);
                             }
                         }
@@ -359,7 +338,6 @@ public class BlogActivity extends AppCompatActivity {
                     public void onFailure(
                             retrofit2.Call<com.example.caloriesapp.dto.response.BaseResponse<List<com.example.caloriesapp.dto.response.CategoryResponse>>> call,
                             Throwable t) {
-                        // Silently fail for categories as they're not critical
                     }
                 });
     }
