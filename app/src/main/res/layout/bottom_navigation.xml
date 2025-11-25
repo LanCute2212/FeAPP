@@ -35,10 +35,10 @@
             android:layout_marginStart="50dp" />
 
         <ImageView
-            android:id="@+id/search_icon"
+            android:id="@+id/scanner_icon"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/ic_search1"
+            android:src="@drawable/scanner"
             app:tint="#4CAF50"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -116,6 +116,9 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>
+
+
+
 
 
 

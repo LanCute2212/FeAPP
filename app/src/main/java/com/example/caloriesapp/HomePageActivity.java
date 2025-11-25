@@ -202,6 +202,14 @@ public class HomePageActivity extends AppCompatActivity {
       startActivity(intent);
     });
 
+    View scannerIcon = findViewById(R.id.scanner_icon);
+    if (scannerIcon != null) {
+      scannerIcon.setOnClickListener(v -> {
+        Intent intent = new Intent(HomePageActivity.this, BarcodeScannerActivity.class);
+        startActivity(intent);
+      });
+    }
+
     setupCollapsibleActivityHeader();
 
     View addActivityButton = findViewById(R.id.add_activity);
