@@ -13,4 +13,13 @@
     <color name="googleGreen">#34A853</color>
     <color name="facebookColor">#1877F2</color>
     <color name="green">#4CAF50</color>
+    
+    <!-- Blog Light Theme Colors -->
+    <color name="blogBackground">#F5F5F5</color>
+    <color name="blogCardBackground">#FFFFFF</color>
+    <color name="blogTextPrimary">#212121</color>
+    <color name="blogTextSecondary">#757575</color>
+    <color name="blogCategoryChip">#E0E0E0</color>
+    <color name="blogCategoryChipSelected">#4CAF50</color>
+    <color name="blogFeaturedBadge">#4CAF50</color>
 </resources>

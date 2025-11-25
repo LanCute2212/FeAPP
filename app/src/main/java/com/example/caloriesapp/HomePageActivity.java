@@ -65,8 +65,10 @@ public class HomePageActivity extends AppCompatActivity {
   private static final boolean USE_HARD_CODED_WEEK_DATA = true;
   private static final double HARD_CODED_WEEKLY_TARGET = 14000.0;
   private static final double HARD_CODED_WEEKLY_CONSUMED = 5000.0;
-  
+
   private String email;
+
+  private String token;
   private ActivityAdapter activityAdapter;
   private List<ActivityItem> activityList;
   private SessionManager sessionManager;
@@ -80,7 +82,7 @@ public class HomePageActivity extends AppCompatActivity {
   private ProgressBar progressWeekCarbs, progressWeekProtein, progressWeekFat;
   private TextView tvCaloriesT2, tvCaloriesT3, tvCaloriesT4, tvCaloriesT5, tvCaloriesT6, tvCaloriesT7, tvCaloriesCN;
   private View barT2, barT3, barT4, barT5, barT6, barT7, barCN;
-  
+
   private double tdee = 0;
   private double targetWeight = -1;
   private int selectedAdjustmentLevel = 500;
@@ -97,40 +99,41 @@ public class HomePageActivity extends AppCompatActivity {
     setContentView(R.layout.activity_topbar);
 
     email = getIntent().getStringExtra("email");
+    token = getIntent().getStringExtra("token");
     selectedDate = getIntent().getStringExtra("selected_date");
     sessionManager = new SessionManager(this);
     if (email == null) {
       email = sessionManager.getEmail();
     }
-    
+
     // Initialize Room database
     AppDatabase database = AppDatabase.getDatabase(this);
     nutritionRepository = new DailyNutritionRepository(database);
-    
+
     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
     targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
     selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
-    
+
     tvIntake = findViewById(R.id.tv_intake);
     tvRemaining = findViewById(R.id.tv_remaining);
     tvConsumed = findViewById(R.id.tv_consumed);
     tvDaNap = findViewById(R.id.da_nap);
     appleImg = findViewById(R.id.apple_img);
-    
+
     progressCarbs = findViewById(R.id.progress_carbs);
     progressProtein = findViewById(R.id.progress_protein);
     progressFat = findViewById(R.id.progress_fat);
     progressFiber = findViewById(R.id.progress_fiber);
-    
+
     tvCarbsProgress = findViewById(R.id.tv_carbs_progress);
     tvProteinProgress = findViewById(R.id.tv_protein_progress);
     tvFatProgress = findViewById(R.id.tv_fat_progress);
     tvFiberProgress = findViewById(R.id.tv_fiber_progress);
-    
+
     weekCalorieProgress = findViewById(R.id.week_calorie_progress);
     weekCaloriesConsumed = findViewById(R.id.week_calories_consumed);
     weekCaloriesTarget = findViewById(R.id.week_calories_target);
-    
+
     // Weekly nutrition progress bars and text views
     tvWeekCarbsProgress = findViewById(R.id.tv_week_carbs_progress);
     tvWeekProteinProgress = findViewById(R.id.tv_week_protein_progress);
@@ -138,7 +141,7 @@ public class HomePageActivity extends AppCompatActivity {
     progressWeekCarbs = findViewById(R.id.progress_week_carbs);
     progressWeekProtein = findViewById(R.id.progress_week_protein);
     progressWeekFat = findViewById(R.id.progress_week_fat);
-    
+
     // Weekly bar chart calories text views
     tvCaloriesT2 = findViewById(R.id.tv_calories_t2);
     tvCaloriesT3 = findViewById(R.id.tv_calories_t3);
@@ -147,7 +150,7 @@ public class HomePageActivity extends AppCompatActivity {
     tvCaloriesT6 = findViewById(R.id.tv_calories_t6);
     tvCaloriesT7 = findViewById(R.id.tv_calories_t7);
     tvCaloriesCN = findViewById(R.id.tv_calories_cn);
-    
+
     // Weekly bar chart views
     barT2 = findViewById(R.id.bar_t2);
     barT3 = findViewById(R.id.bar_t3);
@@ -189,8 +192,18 @@ public class HomePageActivity extends AppCompatActivity {
       startActivity(intent);
     });
 
+    findViewById(R.id.bottom_explore_icon).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, BlogActivity.class);
+      startActivity(intent);
+    });
+
+    findViewById(R.id.bottom_explore_label).setOnClickListener(v -> {
+      Intent intent = new Intent(HomePageActivity.this, BlogActivity.class);
+      startActivity(intent);
+    });
+
     setupCollapsibleActivityHeader();
-    
+
     View addActivityButton = findViewById(R.id.add_activity);
     if (addActivityButton != null) {
       addActivityButton.setOnClickListener(v -> {
@@ -236,58 +249,59 @@ public class HomePageActivity extends AppCompatActivity {
 
     setupActivitiesList();
     populateWeekDates();
-    
+
     View dietModeContainer = findViewById(R.id.diet_mode_container);
     if (dietModeContainer != null) {
       dietModeContainer.setOnClickListener(v -> showDietModeBottomSheet());
     }
-    
+
     TextView tvDietMode = findViewById(R.id.tv_diet_mode);
     if (tvDietMode != null) {
       tvDietMode.setPaintFlags(tvDietMode.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
     }
-    
+
     loadUserPhysicalProfile();
-    
-    // Add sample data for testing (days 13 and 14) - Commented out to avoid duplicate inserts
+
+    // Add sample data for testing (days 13 and 14) - Commented out to avoid
+    // duplicate inserts
     // addSampleNutritionData();
-  
-  TextView btnDay = findViewById(R.id.btn_theo_ngay);
-  TextView btnWeek = findViewById(R.id.btn_theo_tuan);
-  ViewFlipper flipper = findViewById(R.id.nutrition_flipper);
-  if (flipper != null && btnDay != null && btnWeek != null) {
-    flipper.setInAnimation(this, android.R.anim.slide_in_left);
-    flipper.setOutAnimation(this, android.R.anim.slide_out_right);
 
-    View.OnClickListener dayListener = v -> {
-      if (flipper.getDisplayedChild() != 0) {
-        flipper.setDisplayedChild(0);
-      }
-      styleToggleSelected(btnDay, true);
-      styleToggleSelected(btnWeek, false);
-    };
+    TextView btnDay = findViewById(R.id.btn_theo_ngay);
+    TextView btnWeek = findViewById(R.id.btn_theo_tuan);
+    ViewFlipper flipper = findViewById(R.id.nutrition_flipper);
+    if (flipper != null && btnDay != null && btnWeek != null) {
+      flipper.setInAnimation(this, android.R.anim.slide_in_left);
+      flipper.setOutAnimation(this, android.R.anim.slide_out_right);
 
-    View.OnClickListener weekListener = v -> {
-      if (flipper.getDisplayedChild() != 1) {
-        flipper.setDisplayedChild(1);
-      }
-      styleToggleSelected(btnDay, false);
-      styleToggleSelected(btnWeek, true);
-    };
+      View.OnClickListener dayListener = v -> {
+        if (flipper.getDisplayedChild() != 0) {
+          flipper.setDisplayedChild(0);
+        }
+        styleToggleSelected(btnDay, true);
+        styleToggleSelected(btnWeek, false);
+      };
 
-    btnDay.setOnClickListener(dayListener);
-    btnWeek.setOnClickListener(weekListener);
-    dayListener.onClick(btnDay);
+      View.OnClickListener weekListener = v -> {
+        if (flipper.getDisplayedChild() != 1) {
+          flipper.setDisplayedChild(1);
+        }
+        styleToggleSelected(btnDay, false);
+        styleToggleSelected(btnWeek, true);
+      };
+
+      btnDay.setOnClickListener(dayListener);
+      btnWeek.setOnClickListener(weekListener);
+      dayListener.onClick(btnDay);
+    }
+
+    if (USE_HARD_CODED_WEEK_DATA) {
+      updateWeeklyCaloriesCircle(0, 0);
+    }
+
+    // Load weekly calories data from Room database
+    loadWeeklyCaloriesData();
   }
-  
-  if (USE_HARD_CODED_WEEK_DATA) {
-    updateWeeklyCaloriesCircle(0, 0);
-  }
-  
-  // Load weekly calories data from Room database
-  loadWeeklyCaloriesData();
-  }
-  
+
   private double roundToTwoDecimals(double value) {
     return Math.round(value * 100.0) / 100.0;
   }
@@ -322,14 +336,13 @@ public class HomePageActivity extends AppCompatActivity {
             iconResource,
             intensity,
             distance,
-            date
-        );
+            date);
 
         activityAdapter.addActivity(newActivity);
         Toast.makeText(this, "Added " + activityName + " to your activities", Toast.LENGTH_SHORT)
             .show();
       }
-      
+
       updateSummaryStats();
     }
   }
@@ -371,7 +384,7 @@ public class HomePageActivity extends AppCompatActivity {
     recyclerView.setAdapter(activityAdapter);
 
     setupSwipeToDelete(recyclerView);
-    
+
     updateSummaryStats();
   }
 
@@ -411,14 +424,14 @@ public class HomePageActivity extends AppCompatActivity {
   private void populateWeekDates() {
     Calendar calendar = Calendar.getInstance();
     Calendar referenceDate = Calendar.getInstance();
-    
+
     // If a date is selected, use it as reference; otherwise use today
     if (selectedDate != null) {
       try {
         String[] parts = selectedDate.split("-");
-        referenceDate.set(Integer.parseInt(parts[0]), 
-                         Integer.parseInt(parts[1]) - 1, 
-                         Integer.parseInt(parts[2]));
+        referenceDate.set(Integer.parseInt(parts[0]),
+            Integer.parseInt(parts[1]) - 1,
+            Integer.parseInt(parts[2]));
         calendar = (Calendar) referenceDate.clone();
       } catch (Exception e) {
         // If parsing fails, use today
@@ -426,14 +439,14 @@ public class HomePageActivity extends AppCompatActivity {
         calendar = Calendar.getInstance();
       }
     }
-    
+
     Calendar today = Calendar.getInstance();
     int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
     int daysToSubtract = (currentDayOfWeek == Calendar.SUNDAY) ? 6 : currentDayOfWeek - Calendar.MONDAY;
-    
+
     calendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
-    
+
     TextView[] dayTextViews = {
         findViewById(R.id.day_1),
         findViewById(R.id.day_2),
@@ -443,110 +456,111 @@ public class HomePageActivity extends AppCompatActivity {
         findViewById(R.id.day_6),
         findViewById(R.id.day_7)
     };
-    
+
     Calendar selectedCal = null;
     boolean hasSelectedDate = false;
     if (selectedDate != null) {
       try {
         String[] parts = selectedDate.split("-");
         selectedCal = Calendar.getInstance();
-        selectedCal.set(Integer.parseInt(parts[0]), 
-                       Integer.parseInt(parts[1]) - 1, 
-                       Integer.parseInt(parts[2]));
+        selectedCal.set(Integer.parseInt(parts[0]),
+            Integer.parseInt(parts[1]) - 1,
+            Integer.parseInt(parts[2]));
         hasSelectedDate = true;
       } catch (Exception e) {
         // Ignore
       }
     }
-    
+
     for (int i = 0; i < 7; i++) {
       int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
       dayTextViews[i].setText(String.valueOf(dayOfMonth));
-      
+
       // Clear previous compound drawables
       dayTextViews[i].setCompoundDrawables(null, null, null, null);
-      
+
       boolean isToday = calendar.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH) &&
-                       calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
-                       calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
-      
+          calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+          calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
+
       // Check if this is the selected date
       boolean isSelectedDate = false;
       if (hasSelectedDate && selectedCal != null) {
         isSelectedDate = calendar.get(Calendar.DAY_OF_MONTH) == selectedCal.get(Calendar.DAY_OF_MONTH) &&
-                        calendar.get(Calendar.MONTH) == selectedCal.get(Calendar.MONTH) &&
-                        calendar.get(Calendar.YEAR) == selectedCal.get(Calendar.YEAR);
+            calendar.get(Calendar.MONTH) == selectedCal.get(Calendar.MONTH) &&
+            calendar.get(Calendar.YEAR) == selectedCal.get(Calendar.YEAR);
       }
-      
+
       // If a past day is selected (not today), highlight it with green
       if (hasSelectedDate && isSelectedDate && !isToday) {
         dayTextViews[i].setBackgroundResource(R.drawable.day_background);
         dayTextViews[i].setTextColor(Color.WHITE);
-      } 
+      }
       // If today is selected or no date is selected, highlight today
       else if (isToday && (!hasSelectedDate || isSelectedDate)) {
         dayTextViews[i].setBackgroundResource(R.drawable.day_background);
         dayTextViews[i].setTextColor(Color.WHITE);
-      } 
+      }
       // For other days, no background
       else {
         dayTextViews[i].setBackground(null);
         dayTextViews[i].setTextColor(Color.parseColor("#0a0a0a"));
       }
-      
-      // Show small green dot below today's date if it's visible and not the selected date
+
+      // Show small green dot below today's date if it's visible and not the selected
+      // date
       if (isToday && hasSelectedDate && !isSelectedDate) {
         dayTextViews[i].setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, R.drawable.dot_indicator_green);
         dayTextViews[i].setCompoundDrawablePadding(4);
       }
-      
+
       calendar.add(Calendar.DAY_OF_MONTH, 1);
     }
-    
+
     updateHeaderText();
   }
 
   private void updateHeaderText() {
     Calendar calendar = Calendar.getInstance();
-    
+
     // If a date is selected, use it; otherwise use today
     if (selectedDate != null) {
       try {
         String[] parts = selectedDate.split("-");
-        calendar.set(Integer.parseInt(parts[0]), 
-                    Integer.parseInt(parts[1]) - 1, 
-                    Integer.parseInt(parts[2]));
+        calendar.set(Integer.parseInt(parts[0]),
+            Integer.parseInt(parts[1]) - 1,
+            Integer.parseInt(parts[2]));
       } catch (Exception e) {
         // If parsing fails, use today
         calendar = Calendar.getInstance();
       }
     }
-    
+
     Calendar today = Calendar.getInstance();
     boolean isToday = calendar.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH) &&
-                     calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
-                     calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
-    
+        calendar.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+        calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR);
+
     String[] monthNames = {
         "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
         "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
     };
-    
+
     String dayOfWeek = getDayOfWeekName(calendar.get(Calendar.DAY_OF_WEEK));
     String month = monthNames[calendar.get(Calendar.MONTH)];
     int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-    
+
     TextView headerText = findViewById(R.id.header_text);
     if (isToday) {
-    headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
+      headerText.setText(dayOfWeek + ", " + dayOfMonth + " " + month + "\nHello, let's get started!");
     } else {
       // For past dates, show "Yesterday" or the date
       Calendar yesterday = Calendar.getInstance();
       yesterday.add(Calendar.DAY_OF_MONTH, -1);
       boolean isYesterday = calendar.get(Calendar.DAY_OF_MONTH) == yesterday.get(Calendar.DAY_OF_MONTH) &&
-                           calendar.get(Calendar.MONTH) == yesterday.get(Calendar.MONTH) &&
-                           calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR);
-      
+          calendar.get(Calendar.MONTH) == yesterday.get(Calendar.MONTH) &&
+          calendar.get(Calendar.YEAR) == yesterday.get(Calendar.YEAR);
+
       if (isYesterday) {
         String[] vietnameseMonths = {
             "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -562,43 +576,51 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
   }
-  
+
   private String getCurrentDateString() {
     if (selectedDate != null) {
       return selectedDate;
     }
     return MealDataManager.getInstance().getCurrentDate();
   }
-  
+
   private String getTodayDateString() {
     return MealDataManager.getInstance().getCurrentDate();
   }
 
   private String getDayOfWeekName(int dayOfWeek) {
     switch (dayOfWeek) {
-      case Calendar.SUNDAY: return "SUNDAY";
-      case Calendar.MONDAY: return "MONDAY";
-      case Calendar.TUESDAY: return "TUESDAY";
-      case Calendar.WEDNESDAY: return "WEDNESDAY";
-      case Calendar.THURSDAY: return "THURSDAY";
-      case Calendar.FRIDAY: return "FRIDAY";
-      case Calendar.SATURDAY: return "SATURDAY";
-      default: return "TODAY";
+      case Calendar.SUNDAY:
+        return "SUNDAY";
+      case Calendar.MONDAY:
+        return "MONDAY";
+      case Calendar.TUESDAY:
+        return "TUESDAY";
+      case Calendar.WEDNESDAY:
+        return "WEDNESDAY";
+      case Calendar.THURSDAY:
+        return "THURSDAY";
+      case Calendar.FRIDAY:
+        return "FRIDAY";
+      case Calendar.SATURDAY:
+        return "SATURDAY";
+      default:
+        return "TODAY";
     }
   }
-  
+
   private void setupCollapsibleActivityHeader() {
     View headerContainer = findViewById(R.id.activity_header_container);
     View summaryStatsLayout = findViewById(R.id.summary_stats_layout);
     View activitiesContainer = findViewById(R.id.activities_container);
     TextView expandCollapseArrow = findViewById(R.id.expand_collapse_arrow);
-    
-    final boolean[] isExpanded = {false};
-    
+
+    final boolean[] isExpanded = { false };
+
     if (headerContainer != null) {
       headerContainer.setOnClickListener(v -> {
         isExpanded[0] = !isExpanded[0];
-        
+
         if (isExpanded[0]) {
           if (activitiesContainer != null) {
             activitiesContainer.setVisibility(View.VISIBLE);
@@ -624,7 +646,7 @@ public class HomePageActivity extends AppCompatActivity {
       });
     }
   }
-  
+
   private void updateSummaryStats() {
     TextView totalActivitiesCount = findViewById(R.id.total_activities_count);
     TextView totalCalories = findViewById(R.id.total_calories);
@@ -632,15 +654,15 @@ public class HomePageActivity extends AppCompatActivity {
     TextView activitySummaryText = findViewById(R.id.activity_summary_text);
     TextView tvEmptyActivity = findViewById(R.id.tv_empty_activity);
     RecyclerView recyclerView = findViewById(R.id.activities_recycler_view);
-    
+
     if (totalActivitiesCount == null || activityList == null) {
       return;
     }
-    
+
     int activityCount = activityList.size();
     double totalCal = 0;
     int totalMinutes = 0;
-    
+
     for (ActivityItem activity : activityList) {
       totalCal += activity.getCalories();
       String duration = activity.getDuration();
@@ -649,14 +671,14 @@ public class HomePageActivity extends AppCompatActivity {
         totalMinutes += Integer.parseInt(durationNum);
       }
     }
-    
+
     totalActivitiesCount.setText(String.valueOf(activityCount));
     totalCalories.setText(String.format("%.0f", totalCal));
     totalDuration.setText(totalMinutes + " min");
     if (activitySummaryText != null) {
       activitySummaryText.setText(activityCount + " activities");
     }
-    
+
     if (tvEmptyActivity != null && recyclerView != null) {
       if (activityCount == 0) {
         tvEmptyActivity.setVisibility(View.VISIBLE);
@@ -666,63 +688,65 @@ public class HomePageActivity extends AppCompatActivity {
         recyclerView.setVisibility(View.VISIBLE);
       }
     }
-    
+
     updateCalorieStats();
   }
-  
+
   private void loadUserPhysicalProfile() {
     if (email == null || email.isEmpty()) {
       return;
     }
-    
+
     UserClient userClient = ApiClient.getClient().create(UserClient.class);
-    Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(email);
-    
+    Call<BaseResponse<PhysicalProfileForm>> call = userClient.getInfo(token, email);
+
     call.enqueue(new Callback<BaseResponse<PhysicalProfileForm>>() {
       @Override
-      public void onResponse(Call<BaseResponse<PhysicalProfileForm>> call, Response<BaseResponse<PhysicalProfileForm>> response) {
+      public void onResponse(Call<BaseResponse<PhysicalProfileForm>> call,
+          Response<BaseResponse<PhysicalProfileForm>> response) {
         if (response.isSuccessful() && response.body() != null && !response.body().isError()) {
           PhysicalProfileForm user = response.body().getData();
           tdee = user.getTdee() != null ? user.getTdee() : 0;
-          
+
           if (targetWeight != -1 && user.getWeight() > 0) {
             isWeightLoss = targetWeight < user.getWeight();
           }
-          
+
           updateCalorieStats();
           updateNutritionProgress();
         }
       }
-      
+
       @Override
       public void onFailure(Call<BaseResponse<PhysicalProfileForm>> call, Throwable t) {
       }
     });
   }
-  
+
   private void updateCalorieStats() {
     double intake = 0;
-    
+
     if (tdee > 0) {
-    if (targetWeight == -1) {
-      intake = tdee;
-    } else {
-      if (isWeightLoss) {
-        intake = tdee - selectedAdjustmentLevel;
+      if (targetWeight == -1) {
+        intake = tdee;
       } else {
-        intake = tdee + selectedAdjustmentLevel;
+        if (isWeightLoss) {
+          intake = tdee - selectedAdjustmentLevel;
+        } else {
+          intake = tdee + selectedAdjustmentLevel;
         }
       }
     }
-    
+
     String currentDate = getCurrentDateString();
     String todayDate = getTodayDateString();
-    
+
     // Check if we have data in Room database for this date (past date)
     if (selectedDate != null && !selectedDate.equals(todayDate)) {
-      // Make final copy of intake for use in inner class (tính từ TDEE, không dùng từ Room)
+      // Make final copy of intake for use in inner class (tính từ TDEE, không dùng từ
+      // Room)
       final double finalIntake = intake;
-      
+
       // Load from Room database for past dates
       nutritionRepository.getByDate(selectedDate, new DailyNutritionRepository.OnDataLoadedListener<DailyNutrition>() {
         @Override
@@ -731,32 +755,32 @@ public class HomePageActivity extends AppCompatActivity {
             // Chỉ lấy consumed từ Room, intake và remaining dùng giá trị đã tính
             final double consumedCalories = nutrition.getConsumed();
             final double remaining = finalIntake - consumedCalories;
-            
+
             runOnUiThread(() -> {
               // Intake và remaining dùng giá trị đã tính, không dùng từ Room
               if (tvIntake != null) {
-                tvIntake.setText(String.valueOf((int)finalIntake));
+                tvIntake.setText(String.valueOf((int) finalIntake));
               }
               if (tvRemaining != null) {
-                tvRemaining.setText(String.valueOf((int)remaining));
+                tvRemaining.setText(String.valueOf((int) remaining));
               }
               // Consumed chỉ map từ consumed trong Room
               if (tvConsumed != null) {
-                tvConsumed.setText(String.valueOf((int)consumedCalories));
+                tvConsumed.setText(String.valueOf((int) consumedCalories));
               }
-              
+
               if (tvDaNap != null) {
-                tvDaNap.setText("Intake\n" + (int)finalIntake);
+                tvDaNap.setText("Intake\n" + (int) finalIntake);
               }
-              
+
               if (appleImg != null && finalIntake > 0) {
                 double completionPercent = consumedCalories / finalIntake;
                 completionPercent = Math.max(0.0, Math.min(1.0, completionPercent));
-                appleImg.setAlpha((float)completionPercent);
+                appleImg.setAlpha((float) completionPercent);
               } else if (appleImg != null) {
                 appleImg.setAlpha(0.2f);
               }
-              
+
               updateNutritionProgressFromRoom(nutrition);
             });
           } else {
@@ -768,7 +792,7 @@ public class HomePageActivity extends AppCompatActivity {
       updateCalorieStatsFromMealData(intake);
     }
   }
-  
+
   private void updateCalorieStatsFromMealData(double intake) {
     String currentDate = getCurrentDateString();
     List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
@@ -776,56 +800,56 @@ public class HomePageActivity extends AppCompatActivity {
     for (MealDetail meal : todayMeals) {
       consumedCalories += meal.getCalories();
     }
-    
+
     double burnedCalories = 0;
     if (activityList != null) {
       for (ActivityItem activity : activityList) {
         burnedCalories += activity.getCalories();
       }
     }
-    
+
     double remaining = intake - consumedCalories;
-    
+
     if (tvIntake != null) {
-      tvIntake.setText(String.valueOf((int)intake));
+      tvIntake.setText(String.valueOf((int) intake));
     }
     if (tvRemaining != null) {
-      tvRemaining.setText(String.valueOf((int)remaining));
+      tvRemaining.setText(String.valueOf((int) remaining));
     }
     if (tvConsumed != null) {
-      tvConsumed.setText(String.valueOf((int)burnedCalories));
+      tvConsumed.setText(String.valueOf((int) burnedCalories));
     }
-    
+
     if (tvDaNap != null) {
-      tvDaNap.setText("Intake\n" + (int)intake);
+      tvDaNap.setText("Intake\n" + (int) intake);
     }
-    
+
     if (appleImg != null && intake > 0) {
       double completionPercent = consumedCalories / intake;
       completionPercent = Math.max(0.0, Math.min(1.0, completionPercent));
-      appleImg.setAlpha((float)completionPercent);
+      appleImg.setAlpha((float) completionPercent);
     } else if (appleImg != null) {
       appleImg.setAlpha(0.2f);
     }
-    
+
     updateNutritionProgress();
-    
+
     if (selectedDate == null || selectedDate.equals(getCurrentDateString())) {
       saveDailyNutritionToDatabase(intake, consumedCalories);
     }
-    
+
     updateWeeklyCaloriesCircle(intake, consumedCalories);
     updateWeeklyNutritionProgress();
   }
-  
+
   private void saveDailyNutritionToDatabase(double intake, double consumedCalories) {
     String currentDate = getCurrentDateString();
-    
+
     List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
     double totalCarbs = 0;
     double totalProtein = 0;
     double totalFat = 0;
-    
+
     for (MealDetail meal : todayMeals) {
       try {
         totalCarbs += Double.parseDouble(meal.getCarbs().replace("g", "").trim());
@@ -835,19 +859,18 @@ public class HomePageActivity extends AppCompatActivity {
         // Ignore parsing errors
       }
     }
-    
+
     DailyNutrition dailyNutrition = new DailyNutrition(
         currentDate,
         intake,
         totalCarbs,
         totalFat,
         totalProtein,
-        consumedCalories
-    );
-    
+        consumedCalories);
+
     nutritionRepository.insert(dailyNutrition);
   }
-  
+
   private void updateWeeklyCaloriesCircle(double dailyIntake, double dailyConsumed) {
     if (USE_HARD_CODED_WEEK_DATA) {
       updateWeeklyCaloriesTextViews(HARD_CODED_WEEKLY_CONSUMED, HARD_CODED_WEEKLY_TARGET);
@@ -862,14 +885,16 @@ public class HomePageActivity extends AppCompatActivity {
     updateWeeklyCaloriesTextViews(weeklyConsumed, weeklyTarget);
     updateWeeklyCaloriesProgress(weeklyConsumed, weeklyTarget);
   }
+
   private void updateWeeklyCaloriesTextViews(double weeklyConsumed, double weeklyTarget) {
     if (weekCaloriesConsumed != null) {
-      weekCaloriesConsumed.setText(String.valueOf((int)weeklyConsumed));
+      weekCaloriesConsumed.setText(String.valueOf((int) weeklyConsumed));
     }
     if (weekCaloriesTarget != null) {
-      weekCaloriesTarget.setText(String.valueOf((int)weeklyTarget));
+      weekCaloriesTarget.setText(String.valueOf((int) weeklyTarget));
     }
   }
+
   private void updateWeeklyCaloriesProgress(double weeklyConsumed, double weeklyTarget) {
     if (weekCalorieProgress == null) {
       return;
@@ -881,21 +906,22 @@ public class HomePageActivity extends AppCompatActivity {
       weekCalorieProgress.setProgress(MIN_PROGRESS_PERCENT);
     }
   }
+
   private int calculateProgressPercent(double consumed, double target) {
-    int progressPercent = (int)((consumed / target) * MAX_PROGRESS_PERCENT);
+    int progressPercent = (int) ((consumed / target) * MAX_PROGRESS_PERCENT);
     return Math.min(MAX_PROGRESS_PERCENT, Math.max(MIN_PROGRESS_PERCENT, progressPercent));
   }
 
   private double[] calculateDailyNutritionTargets(double intakeCalories) {
     if (intakeCalories <= 0) {
-      return new double[]{0, 0, 0};
+      return new double[] { 0, 0, 0 };
     }
     double carbsTarget = roundToTwoDecimals(((intakeCalories * selectedCarbPercent) / 100.0) / 4.0);
     double proteinTarget = roundToTwoDecimals(((intakeCalories * selectedProteinPercent) / 100.0) / 4.0);
     double fatTarget = roundToTwoDecimals(((intakeCalories * selectedFatPercent) / 100.0) / 9.0);
-    return new double[]{carbsTarget, proteinTarget, fatTarget};
+    return new double[] { carbsTarget, proteinTarget, fatTarget };
   }
-  
+
   private void updateNutritionProgress() {
     String todayDate = getTodayDateString();
     if (selectedDate != null && !selectedDate.equals(todayDate)) {
@@ -913,7 +939,7 @@ public class HomePageActivity extends AppCompatActivity {
       updateNutritionProgressFromMealData();
     }
   }
-  
+
   private void updateNutritionProgressFromRoom(DailyNutrition nutrition) {
     double carbsConsumed = nutrition.getCarbs();
     double proteinConsumed = nutrition.getProtein();
@@ -945,13 +971,13 @@ public class HomePageActivity extends AppCompatActivity {
         }
       }
     }
-    
+
     double[] dailyTargets = calculateDailyNutritionTargets(intake);
     double carbsTarget = dailyTargets[0];
     double proteinTarget = dailyTargets[1];
     double fatTarget = dailyTargets[2];
     double fiberTarget = 49;
-    
+
     if (tvCarbsProgress != null) {
       tvCarbsProgress.setText(String.format("%.0fg / %.0fg", carbsConsumed, carbsTarget));
     }
@@ -964,37 +990,37 @@ public class HomePageActivity extends AppCompatActivity {
     if (tvFiberProgress != null) {
       tvFiberProgress.setText(String.format("%.0fg / %.0fg", fiberConsumed, fiberTarget));
     }
-    
+
     if (progressCarbs != null && carbsTarget > 0) {
-      int carbsPercent = (int)((carbsConsumed / carbsTarget) * 100);
+      int carbsPercent = (int) ((carbsConsumed / carbsTarget) * 100);
       progressCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
     }
-    
+
     if (progressProtein != null && proteinTarget > 0) {
-      int proteinPercent = (int)((proteinConsumed / proteinTarget) * 100);
+      int proteinPercent = (int) ((proteinConsumed / proteinTarget) * 100);
       progressProtein.setProgress(Math.min(100, Math.max(0, proteinPercent)));
     }
-    
+
     if (progressFat != null && fatTarget > 0) {
-      int fatPercent = (int)((fatConsumed / fatTarget) * 100);
+      int fatPercent = (int) ((fatConsumed / fatTarget) * 100);
       progressFat.setProgress(Math.min(100, Math.max(0, fatPercent)));
     }
-    
+
     if (progressFiber != null && fiberTarget > 0) {
-      int fiberPercent = (int)((fiberConsumed / fiberTarget) * 100);
+      int fiberPercent = (int) ((fiberConsumed / fiberTarget) * 100);
       progressFiber.setProgress(Math.min(100, Math.max(0, fiberPercent)));
     }
   }
-  
+
   private void updateNutritionProgressFromMealData() {
     double carbsConsumed = 0;
     double proteinConsumed = 0;
     double fatConsumed = 0;
     double fiberConsumed = 0;
-    
+
     String currentDate = getCurrentDateString();
     List<MealDetail> todayMeals = MealDataManager.getInstance().getMealDetailsForDate(currentDate);
-    
+
     for (MealDetail meal : todayMeals) {
       try {
         carbsConsumed += Double.parseDouble(meal.getCarbs().replace("g", "").trim());
@@ -1003,7 +1029,7 @@ public class HomePageActivity extends AppCompatActivity {
       } catch (Exception e) {
       }
     }
-    
+
     double intake = 0;
     if (tdee > 0) {
       if (targetWeight == -1) {
@@ -1027,13 +1053,13 @@ public class HomePageActivity extends AppCompatActivity {
         }
       }
     }
-    
+
     double[] dailyTargets = calculateDailyNutritionTargets(intake);
     double carbsTarget = dailyTargets[0];
     double proteinTarget = dailyTargets[1];
     double fatTarget = dailyTargets[2];
     double fiberTarget = 49;
-    
+
     if (tvCarbsProgress != null) {
       tvCarbsProgress.setText(String.format("%.0fg / %.0fg", carbsConsumed, carbsTarget));
     }
@@ -1046,33 +1072,33 @@ public class HomePageActivity extends AppCompatActivity {
     if (tvFiberProgress != null) {
       tvFiberProgress.setText(String.format("%.0fg / %.0fg", fiberConsumed, fiberTarget));
     }
-    
+
     if (progressCarbs != null && carbsTarget > 0) {
-      int carbsPercent = (int)((carbsConsumed / carbsTarget) * 100);
+      int carbsPercent = (int) ((carbsConsumed / carbsTarget) * 100);
       progressCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
     }
-    
+
     if (progressProtein != null && proteinTarget > 0) {
-      int proteinPercent = (int)((proteinConsumed / proteinTarget) * 100);
+      int proteinPercent = (int) ((proteinConsumed / proteinTarget) * 100);
       progressProtein.setProgress(Math.min(100, Math.max(0, proteinPercent)));
     }
-    
+
     if (progressFat != null && fatTarget > 0) {
-      int fatPercent = (int)((fatConsumed / fatTarget) * 100);
+      int fatPercent = (int) ((fatConsumed / fatTarget) * 100);
       progressFat.setProgress(Math.min(100, Math.max(0, fatPercent)));
     }
-    
+
     if (progressFiber != null && fiberTarget > 0) {
-      int fiberPercent = (int)((fiberConsumed / fiberTarget) * 100);
+      int fiberPercent = (int) ((fiberConsumed / fiberTarget) * 100);
       progressFiber.setProgress(Math.min(100, Math.max(0, fiberPercent)));
     }
   }
-  
+
   private void updateWeeklyNutritionProgress() {
     if (tdee == 0) {
       return;
     }
-    
+
     // Calculate intake calories (same logic as updateCalorieStats)
     double intake;
     if (targetWeight == -1) {
@@ -1084,24 +1110,25 @@ public class HomePageActivity extends AppCompatActivity {
         intake = tdee + selectedAdjustmentLevel;
       }
     }
-    
+
     // Get the exact same daily targets that are displayed in "By Day" section
     double[] dailyTargets = calculateDailyNutritionTargets(intake);
     double dailyCarbsTarget = dailyTargets[0];
     double dailyProteinTarget = dailyTargets[1];
     double dailyFatTarget = dailyTargets[2];
-    
+
     // Calculate weekly targets by multiplying daily targets by 7
-    // This ensures weekly values are exactly 7 times the daily values shown in "By Day" section
+    // This ensures weekly values are exactly 7 times the daily values shown in "By
+    // Day" section
     double weeklyCarbsTarget = dailyCarbsTarget * DAYS_IN_WEEK;
     double weeklyProteinTarget = dailyProteinTarget * DAYS_IN_WEEK;
     double weeklyFatTarget = dailyFatTarget * DAYS_IN_WEEK;
-    
+
     // For now, consumed values are 0 (can be updated later with actual weekly data)
     double weeklyCarbsConsumed = 0;
     double weeklyProteinConsumed = 0;
     double weeklyFatConsumed = 0;
-    
+
     // Update TextViews
     if (tvWeekCarbsProgress != null) {
       tvWeekCarbsProgress.setText(String.format("%.0f/%.0fg", weeklyCarbsConsumed, weeklyCarbsTarget));
@@ -1112,51 +1139,52 @@ public class HomePageActivity extends AppCompatActivity {
     if (tvWeekFatProgress != null) {
       tvWeekFatProgress.setText(String.format("%.0f/%.0fg", weeklyFatConsumed, weeklyFatTarget));
     }
-    
+
     // Update ProgressBars
     if (progressWeekCarbs != null && weeklyCarbsTarget > 0) {
-      int carbsPercent = (int)((weeklyCarbsConsumed / weeklyCarbsTarget) * 100);
+      int carbsPercent = (int) ((weeklyCarbsConsumed / weeklyCarbsTarget) * 100);
       progressWeekCarbs.setProgress(Math.min(100, Math.max(0, carbsPercent)));
     }
-    
+
     if (progressWeekProtein != null && weeklyProteinTarget > 0) {
-      int proteinPercent = (int)((weeklyProteinConsumed / weeklyProteinTarget) * 100);
+      int proteinPercent = (int) ((weeklyProteinConsumed / weeklyProteinTarget) * 100);
       progressWeekProtein.setProgress(Math.min(100, Math.max(0, proteinPercent)));
     }
-    
+
     if (progressWeekFat != null && weeklyFatTarget > 0) {
-      int fatPercent = (int)((weeklyFatConsumed / weeklyFatTarget) * 100);
+      int fatPercent = (int) ((weeklyFatConsumed / weeklyFatTarget) * 100);
       progressWeekFat.setProgress(Math.min(100, Math.max(0, fatPercent)));
     }
   }
-  
+
   private void loadWeeklyCaloriesData() {
     Calendar calendar = Calendar.getInstance();
     Calendar referenceDate = Calendar.getInstance();
-    
+
     // If a date is selected, use it as reference; otherwise use today
     if (selectedDate != null) {
       try {
         String[] parts = selectedDate.split("-");
-        referenceDate.set(Integer.parseInt(parts[0]), 
-                         Integer.parseInt(parts[1]) - 1, 
-                         Integer.parseInt(parts[2]));
+        referenceDate.set(Integer.parseInt(parts[0]),
+            Integer.parseInt(parts[1]) - 1,
+            Integer.parseInt(parts[2]));
         calendar = (Calendar) referenceDate.clone();
       } catch (Exception e) {
         referenceDate = Calendar.getInstance();
         calendar = Calendar.getInstance();
       }
     }
-    
+
     // Calculate start of week (Monday)
     int currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
     int daysToSubtract = (currentDayOfWeek == Calendar.SUNDAY) ? 6 : currentDayOfWeek - Calendar.MONDAY;
     calendar.add(Calendar.DAY_OF_MONTH, -daysToSubtract);
-    
+
     // Array to store dates for the week (Monday to Sunday)
     String[] weekDates = new String[7];
-    TextView[] caloriesTextViews = {tvCaloriesT2, tvCaloriesT3, tvCaloriesT4, tvCaloriesT5, tvCaloriesT6, tvCaloriesT7, tvCaloriesCN};
-    
+    TextView[] caloriesTextViews = { tvCaloriesT2, tvCaloriesT3, tvCaloriesT4, tvCaloriesT5, tvCaloriesT6, tvCaloriesT7,
+        tvCaloriesCN };
+
     // Generate date strings for the week
     for (int i = 0; i < 7; i++) {
       int year = calendar.get(Calendar.YEAR);
@@ -1165,15 +1193,15 @@ public class HomePageActivity extends AppCompatActivity {
       weekDates[i] = String.format("%04d-%02d-%02d", year, month, day);
       calendar.add(Calendar.DAY_OF_MONTH, 1);
     }
-    
+
     // Load data for each day
-    final int[] loadedCount = {0};
+    final int[] loadedCount = { 0 };
     final double[] caloriesData = new double[7];
-    
+
     for (int i = 0; i < 7; i++) {
       final int dayIndex = i;
       final String date = weekDates[i];
-      
+
       nutritionRepository.getByDate(date, new DailyNutritionRepository.OnDataLoadedListener<DailyNutrition>() {
         @Override
         public void onDataLoaded(DailyNutrition nutrition) {
@@ -1182,10 +1210,10 @@ public class HomePageActivity extends AppCompatActivity {
             // Get calories from database column
             calories = nutrition.getCalories();
           }
-          
+
           caloriesData[dayIndex] = calories;
           loadedCount[0]++;
-          
+
           // When all 7 days are loaded, update UI
           if (loadedCount[0] == 7) {
             runOnUiThread(() -> {
@@ -1196,28 +1224,28 @@ public class HomePageActivity extends AppCompatActivity {
                   maxCalories = caloriesData[j];
                 }
               }
-              
+
               // Maximum bar height in dp (convert to pixels)
               float maxBarHeightDp = 140f;
               float density = getResources().getDisplayMetrics().density;
-              int maxBarHeightPx = (int)(maxBarHeightDp * density);
-              
+              int maxBarHeightPx = (int) (maxBarHeightDp * density);
+
               // Minimum bar height (for visibility when value > 0 but very small)
-              int minBarHeightPx = (int)(4 * density);
-              
-              View[] bars = {barT2, barT3, barT4, barT5, barT6, barT7, barCN};
-              
+              int minBarHeightPx = (int) (4 * density);
+
+              View[] bars = { barT2, barT3, barT4, barT5, barT6, barT7, barCN };
+
               for (int j = 0; j < 7; j++) {
                 // Update text views
                 if (caloriesTextViews[j] != null) {
                   if (caloriesData[j] > 0) {
-                    caloriesTextViews[j].setText(String.valueOf((int)caloriesData[j]));
+                    caloriesTextViews[j].setText(String.valueOf((int) caloriesData[j]));
                     caloriesTextViews[j].setVisibility(View.VISIBLE);
                   } else {
                     caloriesTextViews[j].setVisibility(View.GONE);
                   }
                 }
-                
+
                 // Update bar heights
                 if (bars[j] != null) {
                   int barHeightPx;
@@ -1228,7 +1256,7 @@ public class HomePageActivity extends AppCompatActivity {
                   } else if (maxCalories > 0) {
                     // Calculate proportional height
                     double ratio = caloriesData[j] / maxCalories;
-                    barHeightPx = (int)(maxBarHeightPx * ratio);
+                    barHeightPx = (int) (maxBarHeightPx * ratio);
                     // Ensure minimum height for visibility
                     if (barHeightPx < minBarHeightPx && caloriesData[j] > 0) {
                       barHeightPx = minBarHeightPx;
@@ -1238,7 +1266,7 @@ public class HomePageActivity extends AppCompatActivity {
                     barHeightPx = 0;
                     bars[j].setVisibility(View.GONE);
                   }
-                  
+
                   // Set bar height
                   android.view.ViewGroup.LayoutParams params = bars[j].getLayoutParams();
                   params.height = barHeightPx;
@@ -1251,52 +1279,54 @@ public class HomePageActivity extends AppCompatActivity {
       });
     }
   }
-  
+
   private void showDietModeBottomSheet() {
     BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(this);
     View bottomSheetView = LayoutInflater.from(this).inflate(R.layout.bottom_sheet_diet_mode, null);
     bottomSheetDialog.setContentView(bottomSheetView);
-    
+
     ImageView btnClose = bottomSheetView.findViewById(R.id.btn_close);
     btnClose.setOnClickListener(v -> bottomSheetDialog.dismiss());
-    
+
     NumberPicker npCarbs = bottomSheetView.findViewById(R.id.np_carbs);
     NumberPicker npProtein = bottomSheetView.findViewById(R.id.np_protein);
     NumberPicker npFat = bottomSheetView.findViewById(R.id.np_fat);
-    
+
     npCarbs.setMinValue(0);
     npCarbs.setMaxValue(100);
     npCarbs.setValue(50);
-    
+
     npProtein.setMinValue(0);
     npProtein.setMaxValue(100);
     npProtein.setValue(23);
-    
+
     npFat.setMinValue(0);
     npFat.setMaxValue(100);
     npFat.setValue(27);
-    
+
     styleNumberPicker(npCarbs, 0xFF4CAF50, 22f);
     styleNumberPicker(npProtein, 0xFF4CAF50, 22f);
     styleNumberPicker(npFat, 0xFF4CAF50, 22f);
-    
+
     TextView tvTotalPercentage = bottomSheetView.findViewById(R.id.tv_total_percentage);
     CardView cardTotalPercentage = bottomSheetView.findViewById(R.id.card_total_percentage);
-    updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
-    
-    final boolean[] isUpdatingFromDiet = {false};
+    updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(),
+        npFat.getValue());
+
+    final boolean[] isUpdatingFromDiet = { false };
     final DietModeAdapter[] adapterRef = new DietModeAdapter[1];
     NumberPicker.OnValueChangeListener valueChangeListener = (picker, oldVal, newVal) -> {
-      updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
+      updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(),
+          npFat.getValue());
       if (!isUpdatingFromDiet[0] && adapterRef[0] != null) {
         adapterRef[0].selectCustom();
       }
     };
-    
+
     npCarbs.setOnValueChangedListener(valueChangeListener);
     npProtein.setOnValueChangedListener(valueChangeListener);
     npFat.setOnValueChangedListener(valueChangeListener);
-    
+
     RecyclerView rvDietModes = bottomSheetView.findViewById(R.id.rv_diet_modes);
     GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
     gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -1314,7 +1344,8 @@ public class HomePageActivity extends AppCompatActivity {
         npCarbs.setValue(selected.getCarbPercent());
         npProtein.setValue(selected.getProteinPercent());
         npFat.setValue(selected.getFatPercent());
-        updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(), npFat.getValue());
+        updateTotalPercentage(tvTotalPercentage, cardTotalPercentage, npCarbs.getValue(), npProtein.getValue(),
+            npFat.getValue());
         isUpdatingFromDiet[0] = false;
       }
     });
@@ -1324,13 +1355,15 @@ public class HomePageActivity extends AppCompatActivity {
     DietClient dietClient = ApiClient.getClient().create(DietClient.class);
     dietClient.getDiets().enqueue(new Callback<BaseResponse<java.util.List<DietResponse>>>() {
       @Override
-      public void onResponse(Call<BaseResponse<java.util.List<DietResponse>>> call, Response<BaseResponse<java.util.List<DietResponse>>> response) {
+      public void onResponse(Call<BaseResponse<java.util.List<DietResponse>>> call,
+          Response<BaseResponse<java.util.List<DietResponse>>> response) {
         if (response.isSuccessful() && response.body() != null && !response.body().isError()) {
           java.util.List<DietResponse> diets = response.body().getData();
           if (diets == null) {
             diets = new java.util.ArrayList<>();
           }
-          DietResponse custom = new DietResponse("Tùy chỉnh", npCarbs.getValue(), npFat.getValue(), npProtein.getValue());
+          DietResponse custom = new DietResponse("Tùy chỉnh", npCarbs.getValue(), npFat.getValue(),
+              npProtein.getValue());
           java.util.List<DietResponse> withCustom = new java.util.ArrayList<>();
           withCustom.add(custom);
           withCustom.addAll(diets);
@@ -1342,7 +1375,7 @@ public class HomePageActivity extends AppCompatActivity {
       public void onFailure(Call<BaseResponse<java.util.List<DietResponse>>> call, Throwable t) {
       }
     });
-    
+
     Button btnSave = bottomSheetView.findViewById(R.id.btn_save_diet_mode);
     btnSave.setOnClickListener(v -> {
       int selectedIndex = dietModeAdapter.getSelectedPosition();
@@ -1368,10 +1401,10 @@ public class HomePageActivity extends AppCompatActivity {
       Toast.makeText(this, "Đã lưu chế độ ăn: " + nameToSave, Toast.LENGTH_SHORT).show();
       bottomSheetDialog.dismiss();
     });
-    
+
     bottomSheetDialog.show();
   }
-  
+
   private void updateTotalPercentage(TextView tvTotal, CardView cardView, int carbs, int protein, int fat) {
     int total = carbs + protein + fat;
     tvTotal.setText(total + "%");
@@ -1387,9 +1420,10 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
   }
-  
+
   private void styleToggleSelected(TextView textView, boolean selected) {
-    if (textView == null) return;
+    if (textView == null)
+      return;
     textView.setTypeface(null, selected ? Typeface.BOLD : Typeface.NORMAL);
     textView.setTextColor(selected ? Color.parseColor("#111111") : Color.parseColor("#9E9E9E"));
     if (selected) {
@@ -1397,14 +1431,15 @@ public class HomePageActivity extends AppCompatActivity {
     } else {
       textView.setBackground(null);
     }
-    int hPad = (int)(12 * getResources().getDisplayMetrics().density);
-    int vPad = (int)(6 * getResources().getDisplayMetrics().density);
+    int hPad = (int) (12 * getResources().getDisplayMetrics().density);
+    int vPad = (int) (6 * getResources().getDisplayMetrics().density);
     textView.setPadding(hPad, vPad, hPad, vPad);
   }
 
   private void styleNumberPicker(NumberPicker numberPicker, int centerColor, float textSizeSp) {
     try {
-      @SuppressLint("SoonBlockedPrivateApi") java.lang.reflect.Field selectorWheelPaintField = NumberPicker.class.getDeclaredField("mSelectorWheelPaint");
+      @SuppressLint("SoonBlockedPrivateApi")
+      java.lang.reflect.Field selectorWheelPaintField = NumberPicker.class.getDeclaredField("mSelectorWheelPaint");
       selectorWheelPaintField.setAccessible(true);
       Paint selectorWheelPaint = (Paint) selectorWheelPaintField.get(numberPicker);
       selectorWheelPaint.setColor(centerColor);
@@ -1431,55 +1466,55 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
   }
-  
+
   @Override
   protected void onResume() {
     super.onResume();
-    
+
     SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
     targetWeight = prefs.getFloat(KEY_TARGET_WEIGHT, -1);
     selectedAdjustmentLevel = prefs.getInt(KEY_ADJUSTMENT_LEVEL, 500);
-    
+
     if (USE_HARD_CODED_WEEK_DATA) {
       updateWeeklyCaloriesCircle(0, 0);
     }
-    
+
     // Refresh all data when returning to the activity
     updateCalorieStats();
     updateNutritionProgress();
     loadWeeklyCaloriesData();
   }
-  
+
   private void addSampleNutritionData() {
     Calendar calendar = Calendar.getInstance();
     int currentYear = calendar.get(Calendar.YEAR);
     int currentMonth = calendar.get(Calendar.MONTH) + 1; // Month is 1-based for date string
-    
+
     // Sample data for day 13
     String date13 = String.format("%04d-%02d-%02d", currentYear, currentMonth, 13);
     DailyNutrition nutrition13 = new DailyNutrition(
         date13,
-        2000.0,  // calories target
-        150.0,   // carbs (g)
-        60.0,    // fat (g)
-        120.0,   // protein (g)
-        1800.0   // consumed calories
+        2000.0, // calories target
+        150.0, // carbs (g)
+        60.0, // fat (g)
+        120.0, // protein (g)
+        1800.0 // consumed calories
     );
     nutritionRepository.insert(nutrition13);
-    
+
     // Sample data for day 14
     String date14 = String.format("%04d-%02d-%02d", currentYear, currentMonth, 14);
     DailyNutrition nutrition14 = new DailyNutrition(
         date14,
-        2000.0,  // calories target
-        180.0,   // carbs (g)
-        70.0,    // fat (g)
-        140.0,   // protein (g)
-        2100.0   // consumed calories
+        2000.0, // calories target
+        180.0, // carbs (g)
+        70.0, // fat (g)
+        140.0, // protein (g)
+        2100.0 // consumed calories
     );
     nutritionRepository.insert(nutrition14);
   }
-  
+
   private static class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
     private int spanCount;
     private int spacing;
@@ -1514,33 +1549,34 @@ public class HomePageActivity extends AppCompatActivity {
       }
     }
   }
-  
+
   private static class DietModeAdapter extends RecyclerView.Adapter<DietModeAdapter.DietModeViewHolder> {
     interface OnDietSelectedListener {
       void onDietSelected(DietResponse selectedDiet);
     }
+
     private java.util.List<DietResponse> dietModes;
     private int selectedPosition;
     private OnDietSelectedListener onDietSelectedListener;
-    
+
     DietModeAdapter(java.util.List<DietResponse> dietModes, int selectedPosition, OnDietSelectedListener listener) {
       this.dietModes = dietModes;
       this.selectedPosition = selectedPosition;
       this.onDietSelectedListener = listener;
     }
-    
+
     @NonNull
     @Override
     public DietModeViewHolder onCreateViewHolder(@NonNull android.view.ViewGroup parent, int viewType) {
       View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_diet_mode_button, parent, false);
       return new DietModeViewHolder(view);
     }
-    
+
     @Override
     public void onBindViewHolder(@NonNull DietModeViewHolder holder, int position) {
       holder.button.setText(dietModes.get(position).getName());
       boolean isSelected = position == selectedPosition;
-      
+
       if (isSelected) {
         holder.button.setBackgroundResource(R.drawable.btn_diet_mode_selected);
         holder.button.setTextColor(android.graphics.Color.parseColor("#4CAF50"));
@@ -1550,7 +1586,7 @@ public class HomePageActivity extends AppCompatActivity {
         holder.button.setTextColor(android.graphics.Color.parseColor("#424242"));
         holder.button.setElevation(0f);
       }
-      
+
       holder.button.setOnClickListener(v -> {
         int oldPosition = selectedPosition;
         selectedPosition = position;
@@ -1561,29 +1597,29 @@ public class HomePageActivity extends AppCompatActivity {
         }
       });
     }
-    
+
     @Override
     public int getItemCount() {
       return dietModes.size();
     }
-    
+
     int getSelectedPosition() {
       return selectedPosition;
     }
-    
+
     DietResponse getItem(int position) {
       if (position < 0 || position >= dietModes.size()) {
         return null;
       }
       return dietModes.get(position);
     }
-    
+
     void setItems(java.util.List<DietResponse> newItems) {
       dietModes.clear();
       dietModes.addAll(newItems);
       notifyDataSetChanged();
     }
-    
+
     void selectCustom() {
       if (dietModes.isEmpty()) {
         return;
@@ -1595,10 +1631,10 @@ public class HomePageActivity extends AppCompatActivity {
       }
       notifyItemChanged(selectedPosition);
     }
-    
+
     static class DietModeViewHolder extends RecyclerView.ViewHolder {
       Button button;
-      
+
       DietModeViewHolder(@NonNull View itemView) {
         super(itemView);
         button = itemView.findViewById(R.id.btn_diet_mode);

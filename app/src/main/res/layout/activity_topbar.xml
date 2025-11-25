@@ -218,7 +218,7 @@
                 android:id="@+id/search_icon"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@drawable/ic_search"
+                android:src="@drawable/ic_search1"
                 app:tint="#4CAF50"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -274,13 +274,13 @@
                 android:id="@+id/bottom_explore_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Explore"
+                android:text="Blog"
                 android:textSize="12sp"
                 android:textColor="#9E9E9E"
                 app:layout_constraintEnd_toEndOf="@id/bottom_explore_icon"
                 app:layout_constraintTop_toBottomOf="@id/bottom_explore_icon"
                 android:layout_marginTop="4dp"
-                android:layout_marginEnd="-6dp"/>
+                android:layout_marginEnd="0dp"/>
 
             <TextView
                 android:id="@+id/bottom_help_label"
