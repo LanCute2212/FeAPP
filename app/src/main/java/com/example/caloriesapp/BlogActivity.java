@@ -138,7 +138,6 @@ public class BlogActivity extends AppCompatActivity {
                             if (!baseResponse.isError() && baseResponse.getData() != null) {
                                 articleList.clear();
 
-                                // Convert PostSummaryResponse to BlogArticle
                                 for (com.example.caloriesapp.dto.response.PostSummaryResponse post : baseResponse
                                         .getData()) {
                                     String timeAgo = formatTimeAgo(post.getCreatedAt());
@@ -189,7 +188,6 @@ public class BlogActivity extends AppCompatActivity {
     }
 
     private void loadSampleData() {
-        // Sample data as fallback
         articleList.clear();
         articleList.add(new BlogArticle(1, "10 Bài tập Cardio đốt mỡ tại nhà không cần dụng cụ",
                 "HLV Tuấn Anh", "2 giờ trước", 0, false));
