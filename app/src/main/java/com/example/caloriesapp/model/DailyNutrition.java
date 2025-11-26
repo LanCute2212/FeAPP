@@ -8,13 +8,13 @@ import androidx.room.PrimaryKey;
 public class DailyNutrition {
     @PrimaryKey
     @NonNull
-    private String date; // Format: "yyyy-MM-dd"
+    private String date;
     
     private double calories;
     private double carbs;
     private double fat;
     private double protein;
-    private double consumed; // Calories consumed (from meals)
+    private double consumed;
     
     public DailyNutrition() {
     }
