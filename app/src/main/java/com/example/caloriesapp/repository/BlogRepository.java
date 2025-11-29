@@ -24,4 +24,8 @@ public class BlogRepository {
     public Call<BaseResponse<List<CategoryResponse>>> getAllCategories() {
         return blogClient.getAllCategories();
     }
+
+    public Call<BaseResponse<PostSummaryResponse>> getPostDetail(Long postId) {
+        return blogClient.getPostDetail(postId);
+    }
 }

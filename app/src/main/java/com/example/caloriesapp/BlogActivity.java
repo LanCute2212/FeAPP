@@ -119,8 +119,9 @@ public class BlogActivity extends AppCompatActivity {
         rvBlogArticles.setAdapter(blogAdapter);
 
         blogAdapter.setOnArticleClickListener((article, position) -> {
-            Toast.makeText(this, "Clicked: " + article.getTitle(), Toast.LENGTH_SHORT).show();
-            // TODO: Open article detail activity
+            Intent intent = new Intent(BlogActivity.this, BlogDetailActivity.class);
+            intent.putExtra(BlogDetailActivity.EXTRA_POST_ID, (long) article.getId());
+            startActivity(intent);
         });
     }
 
