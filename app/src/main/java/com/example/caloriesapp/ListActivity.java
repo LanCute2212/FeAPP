@@ -311,21 +311,28 @@ public class ListActivity extends AppCompatActivity {
     }
     
     private void updateActivityDuration(ActivityItem activity, int durationMinutes, int position) {
-        int caloriesPerMinute = 500 / 30;
-        int newCalories = caloriesPerMinute * durationMinutes;
-        
+        String durationString = activity.getDuration() != null ? activity.getDuration() : "";
+        String durationDigits = durationString.replaceAll("\\D+", "");
+        int baseMinutes = 30;
+        if (!durationDigits.isEmpty()) {
+            try {
+                baseMinutes = Integer.parseInt(durationDigits);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        double baseCalories = activity.getCalories() != null ? activity.getCalories() : 0.0;
+        double caloriesPerMinute = baseMinutes > 0 ? baseCalories / (double) baseMinutes : 0.0;
+        double newCalories = caloriesPerMinute * (double) durationMinutes;
         ActivityItem updatedActivity = new ActivityItem(
-            activity.getName(),
-            durationMinutes + " minutes",
-                (double) newCalories,
-            activity.getIconResource(),
-            activity.getIntensity(),
-            activity.getDistance(),
-            activity.getDate()
+                activity.getName(),
+                durationMinutes + " minutes",
+                newCalories,
+                activity.getIconResource(),
+                activity.getIntensity(),
+                activity.getDistance(),
+                activity.getDate()
         );
-        
         activityAdapter.updateActivity(position, updatedActivity);
-        
         Intent resultIntent = new Intent();
         resultIntent.putExtra("activity_name", updatedActivity.getName());
         resultIntent.putExtra("duration", updatedActivity.getDuration());
@@ -334,10 +341,8 @@ public class ListActivity extends AppCompatActivity {
         resultIntent.putExtra("intensity", updatedActivity.getIntensity());
         resultIntent.putExtra("distance", updatedActivity.getDistance());
         resultIntent.putExtra("date", updatedActivity.getDate());
-        
         setResult(RESULT_OK, resultIntent);
         finish();
-        
-        Log.d("ActivityUpdate", "Updated " + activity.getName() + " to " + durationMinutes + " minutes, " + newCalories + " calories");
+        Log.d("ActivityUpdate", "Updated " + activity.getName() + " to " + durationMinutes + " minutes, " + newCalories + " calories (local calc)");
     }
 }

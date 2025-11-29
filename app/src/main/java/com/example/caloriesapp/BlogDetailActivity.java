@@ -123,3 +123,4 @@ public class BlogDetailActivity extends AppCompatActivity {
 }
 
 
+
