@@ -20,6 +20,10 @@ import com.example.caloriesapp.adapter.FoodAdapter;
 import com.example.caloriesapp.model.FoodItem;
 import com.example.caloriesapp.model.MealDetail;
 import com.example.caloriesapp.util.MealDataManager;
+import com.example.caloriesapp.apiclient.ApiClient;
+import com.example.caloriesapp.apiclient.DishClient;
+import com.example.caloriesapp.dto.response.BaseResponse;
+import com.example.caloriesapp.dto.response.DishDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +49,7 @@ public class FoodTrackingActivity extends AppCompatActivity {
   private int currentTabIndex = 0;
   private String currentSearchQuery = "";
   private String selectedDate = null; // Date in format "yyyy-MM-dd", null means today
+  private DishClient dishClient;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +64,8 @@ public class FoodTrackingActivity extends AppCompatActivity {
     
     // Get selected date from intent
     selectedDate = getIntent().getStringExtra("selected_date");
+
+    dishClient = ApiClient.getClient().create(DishClient.class);
 
     initializeViews();
     setupFoodList();
@@ -139,11 +146,10 @@ public class FoodTrackingActivity extends AppCompatActivity {
     RecyclerView recyclerView = findViewById(R.id.food_recycler_view);
     recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-    allFoodList = createSampleFoodList();
+    allFoodList = new ArrayList<>();
     recentFoodList = new ArrayList<>();
     favoritesFoodList = new ArrayList<>();
     myFoodsList = new ArrayList<>();
-    
     displayedFoodList = new ArrayList<>();
     foodAdapter = new FoodAdapter(displayedFoodList);
     recyclerView.setAdapter(foodAdapter);
@@ -171,8 +177,50 @@ public class FoodTrackingActivity extends AppCompatActivity {
         startActivityForResult(intent, 2002);
       }
     });
-    
-    updateDisplayedFoodList();
+  }
+
+  private void loadAllDishesFromServer() {
+    if (dishClient == null) {
+      return;
+    }
+    dishClient.getAllDishes().enqueue(new retrofit2.Callback<BaseResponse<java.util.List<DishDto>>>() {
+      @Override
+      public void onResponse(retrofit2.Call<BaseResponse<java.util.List<DishDto>>> call,
+          retrofit2.Response<BaseResponse<java.util.List<DishDto>>> response) {
+        if (!response.isSuccessful() || response.body() == null || response.body().isError()
+            || response.body().getData() == null) {
+          Toast.makeText(FoodTrackingActivity.this, "Không tải được danh sách món ăn",
+              Toast.LENGTH_SHORT).show();
+          return;
+        }
+        java.util.List<DishDto> dishes = response.body().getData();
+        allFoodList.clear();
+        for (DishDto dish : dishes) {
+          String servingSize = dish.getServingSize() != null ? dish.getServingSize() : "1 serving";
+          int calories = dish.getCalories() != null ? dish.getCalories().intValue() : 0;
+          String protein = String.format("%.1fg", dish.getProtein() != null ? dish.getProtein() : 0.0);
+          String carbs = String.format("%.1fg", dish.getCarb() != null ? dish.getCarb() : 0.0);
+          String fat = String.format("%.1fg", dish.getFat() != null ? dish.getFat() : 0.0);
+          FoodItem foodItem = new FoodItem(
+              dish.getName(),
+              servingSize,
+              calories,
+              R.drawable.ic_meal,
+              protein,
+              carbs,
+              fat,
+              dish.getImageUrl());
+          allFoodList.add(foodItem);
+        }
+        updateDisplayedFoodList();
+      }
+
+      @Override
+      public void onFailure(retrofit2.Call<BaseResponse<java.util.List<DishDto>>> call, Throwable t) {
+        Toast.makeText(FoodTrackingActivity.this, "Lỗi mạng khi tải món ăn", Toast.LENGTH_SHORT)
+            .show();
+      }
+    });
   }
   
   private void updateDisplayedFoodList() {
@@ -181,7 +229,7 @@ public class FoodTrackingActivity extends AppCompatActivity {
     
     switch (currentTabIndex) {
       case 0:
-        sourceList = recentFoodList;
+        sourceList = allFoodList;
         break;
       case 1:
         sourceList = favoritesFoodList;
@@ -227,7 +275,7 @@ public class FoodTrackingActivity extends AppCompatActivity {
     // Action buttons click listeners - using the LinearLayout children
     LinearLayout actionButtons = findViewById(R.id.action_buttons);
     actionButtons.getChildAt(0).setOnClickListener(v -> {
-      // Handle food category selection
+      loadAllDishesFromServer();
     });
 
     actionButtons.getChildAt(1).setOnClickListener(v -> {

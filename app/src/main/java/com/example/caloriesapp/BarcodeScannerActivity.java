@@ -234,7 +234,8 @@ public class BarcodeScannerActivity extends AppCompatActivity {
                                                                 String.format("%.1f",
                                                                         dish.getCarb() != null ? dish.getCarb() : 0.0),
                                                                 String.format("%.1f",
-                                                                        dish.getFat() != null ? dish.getFat() : 0.0));
+                                                                        dish.getFat() != null ? dish.getFat() : 0.0),
+                                                                dish.getImageUrl());
 
                                                         Intent intent = new Intent(BarcodeScannerActivity.this,
                                                                 MealDetailFoodActivity.class);

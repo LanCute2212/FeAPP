@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.caloriesapp.R;
 import com.example.caloriesapp.model.FoodItem;
 
@@ -76,7 +77,17 @@ public class FoodAdapter extends RecyclerView.Adapter<FoodAdapter.FoodViewHolder
         }
 
         public void bind(FoodItem food, int position, OnFoodClickListener clickListener) {
-            foodImage.setImageResource(food.getIconResource());
+            String imageUrl = food.getImageUrl();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(itemView.getContext())
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_meal)
+                        .error(R.drawable.ic_meal)
+                        .centerCrop()
+                        .into(foodImage);
+            } else {
+                foodImage.setImageResource(food.getIconResource());
+            }
             foodName.setText(food.getName());
             nutritionSummary.setText(food.getNutritionSummary());
 

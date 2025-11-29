@@ -202,11 +202,11 @@
                         android:layout_marginBottom="12dp" />
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="24dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="24dp">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="80dp"
@@ -242,32 +242,28 @@
                             android:layout_weight="1"
                             android:hint=""
                             android:layout_marginStart="12dp"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             app:boxCornerRadiusTopStart="12dp"
                             app:boxCornerRadiusTopEnd="12dp"
                             app:boxCornerRadiusBottomStart="12dp"
                             app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxStrokeColor="#E0E0E0"
-                    app:boxStrokeWidth="1dp"
-                    app:endIconMode="dropdown_menu"
-                    app:endIconTint="#666666"
+                            app:boxStrokeColor="#E0E0E0"
+                            app:boxStrokeWidth="1dp"
                             app:hintEnabled="false">
 
-                            <AutoCompleteTextView
+                            <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/serving_unit"
                                 android:layout_width="match_parent"
-                                android:layout_height="48dp"
+                                android:layout_height="wrap_content"
                                 android:paddingStart="16dp"
-                                android:paddingEnd="40dp"
+                                android:paddingEnd="16dp"
                                 android:background="@android:color/transparent"
-                                android:clickable="true"
-                                android:focusable="false"
                                 android:fontFamily="@font/poppins_medium"
-                                android:gravity="center_vertical|start"
-                                android:inputType="none"
+                                android:gravity="center"
+                                android:inputType="text"
                                 android:textColor="#333333"
                                 android:textSize="16sp"
-                                android:text="Khẩu phần (50g)" />
+                                android:hint="Khẩu phần (ví dụ: 50g)" />
 
                         </com.google.android.material.textfield.TextInputLayout>
 

@@ -6,10 +6,12 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import com.bumptech.glide.Glide;
 import com.example.caloriesapp.model.FoodItem;
 import com.example.caloriesapp.model.MealDetail;
 import com.example.caloriesapp.util.MealDataManager;
@@ -25,7 +27,7 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   private String currentMealType;
   private AutoCompleteTextView mealTypeDropdown;
   private TextInputEditText servingCountInput;
-  private AutoCompleteTextView servingUnitDropdown;
+  private TextInputEditText servingUnitInput;
   private SegmentedCircularProgressView calorieProgress;
   private TextView calorieText;
   private TextView carbsValue;
@@ -35,6 +37,7 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   private TextView fatValue;
   private TextView fatPercent;
   private MaterialButton addToMealButton;
+  private ImageView foodIllustration;
 
   private int servingCount = 1;
   private double baseCalories = 0;
@@ -71,7 +74,7 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   private void initializeViews() {
     mealTypeDropdown = findViewById(R.id.meal_type);
     servingCountInput = findViewById(R.id.serving_count);
-    servingUnitDropdown = findViewById(R.id.serving_unit);
+    servingUnitInput = findViewById(R.id.serving_unit);
     calorieProgress = findViewById(R.id.calorie_progress);
     calorieText = findViewById(R.id.calorie_text);
     carbsValue = findViewById(R.id.carbs_value);
@@ -81,9 +84,23 @@ public class MealDetailFoodActivity extends AppCompatActivity {
     fatValue = findViewById(R.id.fat_value);
     fatPercent = findViewById(R.id.fat_percent);
     addToMealButton = findViewById(R.id.add_to_meal_button);
+    foodIllustration = findViewById(R.id.food_illustration);
 
     TextView foodName = findViewById(R.id.food_name);
     foodName.setText(foodItem.getName());
+    if (foodIllustration != null) {
+      String imageUrl = foodItem.getImageUrl();
+      if (imageUrl != null && !imageUrl.isEmpty()) {
+        Glide.with(this)
+            .load(imageUrl)
+            .placeholder(R.drawable.ic_meal)
+            .error(R.drawable.ic_meal)
+            .centerCrop()
+            .into(foodIllustration);
+      } else {
+        foodIllustration.setImageResource(foodItem.getIconResource());
+      }
+    }
 
     baseCalories = foodItem.getCalories();
     try {
@@ -139,21 +156,9 @@ public class MealDetailFoodActivity extends AppCompatActivity {
   }
 
   private void setupServingInputs() {
-    String[] servingUnits = { "Khẩu phần (50g)", "100g", "200g", "1 cốc", "1 chén" };
-
-    ArrayAdapter<String> adapter = new ArrayAdapter<>(
-        this,
-        R.layout.dropdown_item_meal_type,
-        servingUnits);
-
-    servingUnitDropdown.setAdapter(adapter);
-    servingUnitDropdown.setText(servingUnits[0], false);
-
-    try {
-      servingUnitDropdown.setDropDownBackgroundDrawable(
-          getResources().getDrawable(R.drawable.dropdown_background, getTheme()));
-    } catch (Exception e) {
-      servingUnitDropdown.setDropDownBackgroundResource(android.R.drawable.dialog_holo_light_frame);
+    if (servingUnitInput != null) {
+      String servingSize = foodItem.getServingSize() != null ? foodItem.getServingSize() : "";
+      servingUnitInput.setText(servingSize);
     }
 
     servingCountInput.addTextChangedListener(new TextWatcher() {
@@ -233,7 +238,8 @@ public class MealDetailFoodActivity extends AppCompatActivity {
         foodItem.getIconResource(),
         String.format("%.1f", totalProtein),
         String.format("%.1f", totalCarbs),
-        String.format("%.1f", totalFat));
+        String.format("%.1f", totalFat),
+        foodItem.getImageUrl());
 
     String currentDate = (selectedDate != null) ? selectedDate : MealDataManager.getInstance().getCurrentDate();
     MealDetail mealDetail = new MealDetail(currentMealType, adjustedFood, currentDate);
